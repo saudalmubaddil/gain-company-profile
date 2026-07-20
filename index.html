@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>غين — منصة تشغيل صحية موحّدة</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="assets/fonts.css" rel="stylesheet">
+<script src="assets/lucide.min.js"></script>
+<style>
+  :root {
+    --navy-deep: #1a2c5c;
+    --navy: #20346a;
+    --sky: #1d8cbe;
+    --sky-light: #4dbfee;
+    --sky-pale: #9bd9f5;
+    --bg-dark: #0b1430;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Tajawal', system-ui, sans-serif;
+    background: linear-gradient(140deg, var(--navy-deep) 0%, var(--navy) 45%, var(--sky) 135%);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* ---- animated background ---- */
+  .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+  .orb-1 { width: 820px; height: 820px; top: -260px; right: -220px; background: radial-gradient(circle, rgba(77,191,238,.22), rgba(77,191,238,0) 65%); animation: drift1 14s ease-in-out infinite alternate; }
+  .orb-2 { width: 700px; height: 700px; bottom: -280px; left: -160px; background: radial-gradient(circle, rgba(155,217,245,.14), rgba(155,217,245,0) 65%); animation: drift2 18s ease-in-out infinite alternate; }
+  .orb-3 { width: 420px; height: 420px; top: 30%; left: 12%; background: radial-gradient(circle, rgba(77,191,238,.10), rgba(77,191,238,0) 60%); animation: drift1 22s ease-in-out infinite alternate-reverse; }
+  @keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(-60px, 50px) scale(1.08); } }
+  @keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(70px, -40px) scale(1.05); } }
+
+  /* floating mini cards */
+  .chip {
+    position: fixed; z-index: 1; pointer-events: none;
+    background: rgba(255,255,255,.09); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.16); border-radius: 16px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 18px 44px rgba(6,12,32,.35);
+    animation: floaty 6s ease-in-out infinite;
+  }
+  .chip .ic { width: 38px; height: 38px; border-radius: 11px; background: rgba(77,191,238,.25); display: grid; place-items: center; }
+  .chip .ic svg { width: 20px; height: 20px; stroke: var(--sky-pale); }
+  .chip b { display: block; font-size: 14px; font-weight: 700; }
+  .chip span { font-size: 12px; opacity: .72; }
+  .chip-1 { top: 16%; left: 7%; animation-delay: 0s; }
+  .chip-2 { top: 52%; left: 4%; animation-delay: 1.6s; }
+  .chip-3 { top: 76%; left: 12%; animation-delay: 3.1s; }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+
+  /* ---- content ---- */
+  main {
+    position: relative; z-index: 2;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 48px 24px; text-align: center;
+  }
+  .logo { height: 86px; width: auto; margin-bottom: 40px; opacity: 0; animation: rise .9s cubic-bezier(.2,.7,.2,1) .1s forwards; }
+  .badge {
+    display: inline-block; font-size: 14px; font-weight: 700; letter-spacing: .12em;
+    color: var(--sky-pale); background: rgba(77,191,238,.14);
+    border: 1px solid rgba(77,191,238,.35); border-radius: 999px; padding: 8px 22px;
+    margin-bottom: 26px; opacity: 0; animation: rise .9s cubic-bezier(.2,.7,.2,1) .25s forwards;
+  }
+  h1 {
+    font-family: 'Cairo', sans-serif; font-weight: 800;
+    font-size: clamp(38px, 6vw, 72px); line-height: 1.25;
+    opacity: 0; animation: rise .9s cubic-bezier(.2,.7,.2,1) .4s forwards;
+  }
+  h1 em { font-style: normal; color: var(--sky-light); }
+  .sub {
+    font-size: clamp(16px, 2.2vw, 21px); font-weight: 500; opacity: 0; color: rgba(255,255,255,.82);
+    margin-top: 18px; animation: rise .9s cubic-bezier(.2,.7,.2,1) .55s forwards;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---- the two doors ---- */
+  .doors {
+    display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+    margin-top: 56px;
+  }
+  .door {
+    --glow: rgba(77,191,238,.0);
+    position: relative; width: 340px; max-width: 88vw; text-align: right;
+    background: rgba(255,255,255,.07); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.16); border-radius: 24px;
+    padding: 28px 26px; color: #fff; text-decoration: none;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, background .35s, box-shadow .35s;
+    opacity: 0; animation: rise .9s cubic-bezier(.2,.7,.2,1) forwards;
+    overflow: hidden;
+  }
+  .door:nth-child(1) { animation-delay: .7s; }
+  .door:nth-child(2) { animation-delay: .85s; }
+  .door::after {
+    content: ''; position: absolute; inset: 0; border-radius: 24px;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(77,191,238,.16), transparent 65%);
+    opacity: 0; transition: opacity .35s; pointer-events: none;
+  }
+  .door:hover { transform: translateY(-8px); border-color: rgba(77,191,238,.55); background: rgba(255,255,255,.10); box-shadow: 0 26px 60px rgba(6,12,32,.45); }
+  .door:hover::after { opacity: 1; }
+  .door .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .door .icbox { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(140deg, var(--sky) 0%, var(--sky-light) 100%); box-shadow: 0 10px 26px rgba(29,140,190,.45); }
+  .door .icbox svg { width: 26px; height: 26px; stroke: #fff; }
+  .door .arrow { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); transition: transform .35s, background .35s; }
+  .door .arrow svg { width: 18px; height: 18px; stroke: #fff; }
+  .door:hover .arrow { transform: translateX(-6px); background: rgba(77,191,238,.35); }
+  .door h2 { font-family: 'Cairo', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .door p { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.75); margin-bottom: 16px; }
+  .door .meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .door .tag { font-size: 11.5px; font-weight: 700; color: var(--sky-pale); background: rgba(77,191,238,.13); border: 1px solid rgba(77,191,238,.3); border-radius: 999px; padding: 4px 12px; }
+
+  footer {
+    position: relative; z-index: 2; text-align: center; padding: 22px;
+    font-size: 13px; color: rgba(255,255,255,.55);
+  }
+  footer a { color: var(--sky-pale); text-decoration: none; }
+
+  @media (max-width: 860px) { .chip { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+    .logo, .badge, h1, .sub, .door { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="chip chip-1"><div class="ic"><i data-lucide="calendar-check"></i></div><div><b>موعد جديد مؤكّد</b><span>اليوم · 09:30 صباحًا</span></div></div>
+<div class="chip chip-2"><div class="ic"><i data-lucide="file-heart"></i></div><div><b>ملف طبي محدّث</b><span>خطة علاج بخطوات واضحة</span></div></div>
+<div class="chip chip-3"><div class="ic"><i data-lucide="shield-check"></i></div><div><b>مطالبة تأمين مقبولة</b><span>فاتورة مرتبطة بالخدمة</span></div></div>
+
+<main>
+  <img class="logo" src="assets/gain-logo-white.webp" alt="غين">
+  <div class="badge">الملف التعريفي</div>
+  <h1>منصة تشغيل صحية <em>موحّدة</em></h1>
+  <p class="sub">كل رحلة مريض في مسار واحد — من الحجز إلى الفاتورة.</p>
+
+  <div class="doors">
+    <a class="door" href="slides.html">
+      <div class="top">
+        <div class="icbox"><i data-lucide="presentation"></i></div>
+        <div class="arrow"><i data-lucide="arrow-left"></i></div>
+      </div>
+      <h2>العرض التقديمي</h2>
+      <p>الملف التعريفي الكامل بصيغة شرائح — مناسب للاجتماعات وقاعات العرض.</p>
+      <div class="meta"><span class="tag">25 شريحة</span><span class="tag">تنقّل بالأسهم</span><span class="tag">ملء الشاشة</span></div>
+    </a>
+    <a class="door" href="interactive.html">
+      <div class="top">
+        <div class="icbox"><i data-lucide="sparkles"></i></div>
+        <div class="arrow"><i data-lucide="arrow-left"></i></div>
+      </div>
+      <h2>التجربة التفاعلية</h2>
+      <p>استكشف غين بتجربة تصفّح حرّة، بحركة وتفاعل أكثر — على طريقة صفحات المنتجات.</p>
+      <div class="meta"><span class="tag">تمرير حر</span><span class="tag">موشن</span><span class="tag">عناصر تفاعلية</span></div>
+    </a>
+  </div>
+</main>
+
+<footer>
+  غين لتقنية المعلومات · <a href="https://www.gain.sa">www.gain.sa</a> · <a href="mailto:info@gain.sa">info@gain.sa</a>
+</footer>
+
+<script>
+  lucide.createIcons();
+  // spotlight follows cursor inside each door
+  document.querySelectorAll('.door').forEach(d => {
+    d.addEventListener('pointermove', e => {
+      const r = d.getBoundingClientRect();
+      d.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      d.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+</script>
+</body>
+</html>

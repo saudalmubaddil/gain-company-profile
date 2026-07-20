@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>غين — التجربة التفاعلية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="assets/fonts.css" rel="stylesheet">
+<script src="assets/lucide.min.js"></script>
+<style>
+  :root {
+    --navy-deep: #1a2c5c;
+    --navy: #20346a;
+    --sky: #1d8cbe;
+    --sky-light: #4dbfee;
+    --sky-pale: #9bd9f5;
+    --bg-dark: #0b1430;
+    --ink: #1e293b;
+    --ink-soft: #475569;
+    --bg-light: #f8fafc;
+    --line: #e2e8f0;
+    --grad: linear-gradient(140deg, #1a2c5c 0%, #20346a 45%, #1d8cbe 135%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Tajawal', system-ui, sans-serif; color: var(--ink); background: #fff; overflow-x: hidden; }
+  h1, h2, h3 { font-family: 'Cairo', sans-serif; font-weight: 800; }
+  a { text-decoration: none; color: inherit; }
+  img { max-width: 100%; }
+  section { position: relative; }
+
+  /* ============ progress bar & header ============ */
+  #progress { position: fixed; top: 0; right: 0; height: 4px; width: 100%; transform: scaleX(0); transform-origin: 100% 50%; background: linear-gradient(90deg, var(--sky-light), var(--sky)); z-index: 100; }
+  header {
+    position: fixed; top: 0; inset-inline: 0; z-index: 90;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px; transition: background .3s, box-shadow .3s;
+  }
+  header.scrolled { background: rgba(11,20,48,.82); backdrop-filter: blur(14px); box-shadow: 0 8px 30px rgba(6,12,32,.25); }
+  header .logo { position: relative; display: block; height: 34px; }
+  header .logo img { height: 34px; display: block; transition: opacity .35s; }
+  header .logo .lg-navy { position: absolute; inset: 0; opacity: 0; }
+  header nav { display: flex; gap: 4px; }
+  header nav a { color: rgba(255,255,255,.78); font-size: 13.5px; font-weight: 500; padding: 8px 13px; border-radius: 999px; transition: color .25s, background .25s; }
+  header nav a:hover, header nav a.active { color: #fff; background: rgba(77,191,238,.18); }
+  .hbtn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(140deg, var(--sky), var(--sky-light)); color: #fff; font-size: 13.5px; font-weight: 700; padding: 9px 18px; border-radius: 999px; box-shadow: 0 8px 22px rgba(29,140,190,.4); transition: transform .25s, box-shadow .25s; }
+  .hbtn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(29,140,190,.55); }
+  .hbtn svg { width: 15px; height: 15px; }
+  /* header over light sections */
+  header[data-theme="light"].scrolled { background: rgba(248,250,252,.88); box-shadow: 0 8px 30px rgba(26,44,92,.12); }
+  header[data-theme="light"] nav a { color: var(--ink-soft); }
+  header[data-theme="light"] nav a:hover, header[data-theme="light"] nav a.active { color: var(--navy-deep); background: rgba(29,140,190,.12); }
+  header[data-theme="light"] .logo .lg-white { opacity: 0; }
+  header[data-theme="light"] .logo .lg-navy { opacity: 1; }
+  @media (max-width: 980px) { header nav { display: none; } }
+
+  /* ============ section rail ============ */
+  .rail { position: fixed; inset-inline-start: 20px; top: 50%; transform: translateY(-50%); z-index: 80; display: flex; flex-direction: column; gap: 9px; align-items: center; }
+  @media (max-width: 1100px) { .rail { display: none; } }
+  .rail a { position: relative; display: block; width: 5px; height: 5px; padding: 0; border-radius: 999px; background: rgba(26,44,92,.28); transition: height .35s cubic-bezier(.2,.7,.2,1), background .3s, width .35s; }
+  .rail[data-theme="dark"] a { background: rgba(255,255,255,.32); }
+  .rail a:hover { background: rgba(29,140,190,.6); }
+  .rail a.active { height: 22px; background: var(--sky); }
+  .rail[data-theme="dark"] a.active { background: var(--sky-light); }
+  .rail a::after {
+    content: attr(data-label); position: absolute; inset-inline-start: 20px; top: 50%; transform: translateY(-50%) translateX(6px);
+    white-space: nowrap; font-size: 11.5px; font-weight: 700; color: #fff; background: rgba(11,20,48,.88);
+    border-radius: 8px; padding: 4px 10px; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  }
+  .rail a:hover::after { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+  /* ============ reveal engine (one-shot, for non-scrubbed items) ============ */
+  .rv { opacity: 0; transform: translateY(34px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+  .rv.in { opacity: 1; transform: none; }
+  .rv[data-d="1"] { transition-delay: .1s; } .rv[data-d="2"] { transition-delay: .2s; }
+  .rv[data-d="3"] { transition-delay: .3s; } .rv[data-d="4"] { transition-delay: .4s; }
+  .rv[data-d="5"] { transition-delay: .5s; } .rv[data-d="6"] { transition-delay: .6s; }
+
+  .wrap { max-width: 1140px; margin-inline: auto; padding-inline: 28px; }
+  .kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--sky); background: rgba(29,140,190,.09); border: 1px solid rgba(29,140,190,.25); padding: 7px 18px; border-radius: 999px; margin-bottom: 18px; }
+  .kicker.on-dark { color: var(--sky-pale); background: rgba(77,191,238,.13); border-color: rgba(77,191,238,.32); }
+  .h2 { font-size: clamp(28px, 4vw, 44px); line-height: 1.3; margin-bottom: 14px; }
+  .lead { font-size: clamp(15px, 1.8vw, 18px); line-height: 1.9; color: var(--ink-soft); max-width: 720px; }
+
+  /* ============ scroll tracks (pinned scenes) ============ */
+  .track { position: relative; }
+  @media (min-width: 901px) {
+    .track-products { height: 280vh; }
+    .track-journey  { height: 300vh; }
+    .track-team     { height: 260vh; }
+    .track > .pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; align-items: center; overflow: hidden; padding: 0; }
+  }
+  @media (max-width: 900px) {
+    .track { height: auto !important; }
+    .track > .pin { position: static; height: auto; }
+  }
+  .pin > .wrap { width: 100%; }
+
+  /* ============ hero ============ */
+  .hero { min-height: 100vh; min-height: 100svh; background: var(--grad); color: #fff; display: flex; align-items: center; overflow: hidden; padding: 120px 0 80px; }
+  .hero .orb { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform; }
+  .hero .o1 { width: 860px; height: 860px; top: -280px; right: -240px; background: radial-gradient(circle, rgba(77,191,238,.25), transparent 65%); }
+  .hero .o2 { width: 700px; height: 700px; bottom: -300px; left: -140px; background: radial-gradient(circle, rgba(155,217,245,.15), transparent 65%); }
+  .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; position: relative; z-index: 2; }
+  .hero .logo-big { height: 72px; width: auto; margin-bottom: 40px; }
+  .hero h1 { font-size: clamp(38px, 5.5vw, 64px); line-height: 1.28; }
+  .hero h1 em { font-style: normal; color: var(--sky-light); position: relative; white-space: nowrap; }
+  .hero h1 em::after { content: ''; position: absolute; bottom: 4px; right: 0; height: 10px; width: 100%; background: rgba(77,191,238,.3); border-radius: 6px; z-index: -1; transform: scaleX(0); transform-origin: right; animation: underline 1s cubic-bezier(.2,.7,.2,1) 1.2s forwards; }
+  @keyframes underline { to { transform: scaleX(1); } }
+  .hero .lead { color: rgba(255,255,255,.85); margin-top: 18px; }
+  .hero-ctas { display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; padding: 14px 28px; border-radius: 14px; transition: transform .25s, box-shadow .25s, background .25s; cursor: pointer; border: none; font-family: inherit; }
+  .btn svg { width: 17px; height: 17px; }
+  .btn-primary { background: #fff; color: var(--navy); box-shadow: 0 12px 30px rgba(6,12,32,.3); }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(6,12,32,.4); }
+  .btn-ghost { background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.28); }
+  .btn-ghost:hover { background: rgba(255,255,255,.18); transform: translateY(-3px); }
+
+  /* hero floating cards: outer wrapper owns scroll transform, inner card keeps float animation */
+  .float-stack { position: relative; height: 420px; }
+  .fwrap { position: absolute; will-change: transform, opacity; }
+  .fc1 { top: 6%; right: 6%; }
+  .fc2 { top: 38%; right: 24%; }
+  .fc3 { top: 70%; right: 2%; }
+  .fcard {
+    display: flex; gap: 14px; align-items: center;
+    background: rgba(255,255,255,.1); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 18px 22px;
+    box-shadow: 0 22px 54px rgba(6,12,32,.38);
+    animation: heroFloat 6.5s ease-in-out infinite;
+  }
+  .fc2 .fcard { animation-delay: 1.8s; }
+  .fc3 .fcard { animation-delay: 3.4s; }
+  .fcard .ic { width: 46px; height: 46px; border-radius: 13px; background: rgba(77,191,238,.28); display: grid; place-items: center; flex-shrink: 0; }
+  .fcard .ic svg { width: 23px; height: 23px; stroke: var(--sky-pale); }
+  .fcard b { display: block; font-size: 15.5px; }
+  .fcard span { font-size: 12.5px; opacity: .72; }
+  @keyframes heroFloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-18px) } }
+  .fline { position: absolute; top: 18%; right: 20%; height: 62%; width: 2px; background: linear-gradient(180deg, transparent, rgba(77,191,238,.5), transparent); transform-origin: top; }
+  @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } .float-stack { display: none; } }
+
+  .scroll-cue { position: absolute; bottom: 26px; right: 50%; transform: translateX(50%); z-index: 3; color: rgba(255,255,255,.65); font-size: 12.5px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scroll-cue .wheel { width: 24px; height: 38px; border: 2px solid rgba(255,255,255,.4); border-radius: 999px; position: relative; }
+  .scroll-cue .wheel::after { content: ''; position: absolute; top: 7px; right: 50%; transform: translateX(50%); width: 4px; height: 8px; border-radius: 4px; background: var(--sky-light); animation: wheel 1.6s ease-in-out infinite; }
+  @keyframes wheel { 0% { opacity: 1; transform: translateX(50%) translateY(0) } 70% { opacity: 0; transform: translateX(50%) translateY(12px) } 100% { opacity: 0 } }
+
+  /* ============ why: scattered → path (scroll-scrubbed on desktop) ============ */
+  .why { padding: 110px 0; background: var(--bg-dark); color: #fff; overflow: hidden; }
+  .why .lead { color: rgba(255,255,255,.78); }
+  .why-quote { font-size: clamp(17px, 2.2vw, 22px); line-height: 2; font-weight: 500; color: rgba(255,255,255,.9); border-right: 3px solid var(--sky-light); padding-right: 22px; margin-top: 26px; max-width: 760px; }
+  .why-quote b { color: var(--sky-light); }
+  .converge { margin-top: 64px; display: flex; align-items: center; justify-content: center; gap: 0; position: relative; min-height: 150px; }
+  .cv-card {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(8px);
+    border-radius: 16px; padding: 18px 24px; display: flex; align-items: center; gap: 12px;
+    font-weight: 700; font-size: 15px; white-space: nowrap;
+    transition: border-color .5s, background .5s;
+    position: relative; z-index: 2; will-change: transform;
+  }
+  .cv-card svg { width: 20px; height: 20px; stroke: var(--sky-pale); }
+  .converge.locked .cv-card { border-color: rgba(77,191,238,.55); background: rgba(29,140,190,.16); }
+  .cv-link { width: 64px; height: 2px; background: var(--sky-light); transform: scaleX(0); transform-origin: 100% 50%; z-index: 1; }
+  .cv-caption { text-align: center; margin-top: 34px; font-size: 15px; color: var(--sky-pale); font-weight: 700; opacity: 0; }
+  @media (max-width: 800px) {
+    .converge { flex-direction: column; gap: 12px; }
+    .cv-link { width: 2px; height: 34px; transform: scaleY(0); transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+    .cv-card { transform: rotate(4deg); transition: transform 1s cubic-bezier(.2,.7,.2,1), border-color 1s, background 1s; }
+    .converge.in .cv-card { transform: none; border-color: rgba(77,191,238,.55); background: rgba(29,140,190,.16); }
+    .converge.in .cv-link { transform: scaleY(1); }
+    .converge.in .cv-link:nth-child(2) { transition-delay: .9s; }
+    .converge.in .cv-link:nth-child(4) { transition-delay: 1.15s; }
+    .converge-wrap.in .cv-caption { opacity: 1; transition: opacity .8s ease 1.5s; }
+  }
+
+  /* ============ who / vision ============ */
+  .who { padding: 110px 0; background: #fff; }
+  .cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 48px; }
+  @media (max-width: 900px) { .cards-3 { grid-template-columns: 1fr; } }
+  .icard {
+    background: var(--bg-light); border: 1px solid var(--line); border-radius: 22px; padding: 30px 26px;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s, border-color .35s;
+  }
+  .icard:hover { transform: translateY(-8px); box-shadow: 0 24px 54px rgba(26,44,92,.13); border-color: rgba(29,140,190,.35); }
+  .icard .ic { width: 52px; height: 52px; border-radius: 15px; background: var(--grad); display: grid; place-items: center; margin-bottom: 20px; box-shadow: 0 10px 24px rgba(29,140,190,.3); }
+  .icard .ic svg { width: 25px; height: 25px; stroke: #fff; }
+  .icard h3 { font-size: 19px; margin-bottom: 10px; }
+  .icard p { font-size: 14.5px; line-height: 1.85; color: var(--ink-soft); }
+
+  /* ============ values ============ */
+  .values { padding: 110px 0; background: var(--bg-light); }
+  .vals { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 48px; }
+  @media (max-width: 1000px) { .vals { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .vals { grid-template-columns: 1fr; } }
+  .vcard { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 26px 20px; text-align: center; transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s; cursor: default; }
+  .vcard:hover { transform: translateY(-10px) scale(1.03); box-shadow: 0 22px 48px rgba(26,44,92,.14); }
+  .vcard .ic { width: 46px; height: 46px; margin-inline: auto; border-radius: 999px; background: rgba(29,140,190,.1); display: grid; place-items: center; margin-bottom: 14px; transition: background .3s, transform .5s; }
+  .vcard:hover .ic { background: var(--grad); transform: rotate(-8deg) scale(1.1); }
+  .vcard .ic svg { width: 22px; height: 22px; stroke: var(--sky); transition: stroke .3s; }
+  .vcard:hover .ic svg { stroke: #fff; }
+  .vcard h3 { font-size: 16.5px; margin-bottom: 8px; }
+  .vcard p { font-size: 13px; line-height: 1.75; color: var(--ink-soft); }
+
+  /* ============ products: pinned HIS↔ERP scroll-morph ============ */
+  .products { padding: 110px 0; background: #fff; }
+  .ptoggle { display: inline-flex; background: var(--bg-light); border: 1px solid var(--line); border-radius: 999px; padding: 5px; margin-top: 30px; position: relative; }
+  .ptoggle button {
+    position: relative; z-index: 2; border: none; background: transparent; font-family: 'Cairo', sans-serif; font-weight: 800;
+    font-size: 15px; padding: 11px 34px; border-radius: 999px; cursor: pointer; color: var(--ink-soft); transition: color .3s;
+  }
+  .ptoggle button.active { color: #fff; }
+  .ptoggle .pill { position: absolute; top: 5px; bottom: 5px; border-radius: 999px; background: var(--grad); box-shadow: 0 8px 20px rgba(29,140,190,.35); z-index: 1; will-change: transform; }
+  .phint { display: inline-flex; align-items: center; gap: 7px; margin-inline-start: 14px; margin-top: 30px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); opacity: .8; }
+  .phint svg { width: 14px; height: 14px; stroke: var(--sky); }
+  @media (max-width: 900px) { .phint { display: none; } }
+  .pdescs { display: grid; margin-top: 24px; }
+  .pdescs .pdesc { grid-area: 1 / 1; font-size: 15.5px; line-height: 1.9; color: var(--ink-soft); max-width: 780px; }
+  .pgrids { display: grid; margin-top: 30px; }
+  .pgrids .pgrid { grid-area: 1 / 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 900px) { .pgrids .pgrid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .pgrids .pgrid { grid-template-columns: 1fr; } }
+  .pgrid.off { visibility: hidden; pointer-events: none; }
+  .mcard {
+    background: var(--bg-light); border: 1px solid var(--line); border-radius: 18px; padding: 22px;
+    display: flex; gap: 14px; align-items: flex-start; will-change: transform, opacity;
+    transition: box-shadow .3s;
+  }
+  .mcard:hover { box-shadow: 0 16px 36px rgba(26,44,92,.11); }
+  .mcard .ic { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: rgba(29,140,190,.1); display: grid; place-items: center; }
+  .mcard .ic svg { width: 21px; height: 21px; stroke: var(--sky); }
+  .mcard b { display: block; font-size: 15.5px; margin-bottom: 5px; font-family: 'Cairo', sans-serif; }
+  .mcard span { font-size: 13px; line-height: 1.7; color: var(--ink-soft); }
+  /* mobile fallback: click toggle swaps grids */
+  @media (max-width: 900px) {
+    .pgrid { transition: opacity .35s; }
+    .pgrid.off { display: none; }
+  }
+
+  /* ============ journey: pinned scrub + patient token ============ */
+  .journey { padding: 110px 0; background: var(--bg-dark); color: #fff; overflow: hidden; }
+  .journey .lead { color: rgba(255,255,255,.78); }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 56px; position: relative; }
+  @media (max-width: 900px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .steps { grid-template-columns: 1fr; } }
+  .jtrack { position: absolute; top: 26px; right: 12%; left: 12%; height: 3px; background: rgba(255,255,255,.12); border-radius: 4px; }
+  .jtrack .fill { height: 100%; width: 100%; transform: scaleX(0); transform-origin: 100% 50%; background: linear-gradient(90deg, var(--sky-light), var(--sky)); border-radius: 4px; }
+  .jtoken {
+    position: absolute; top: 50%; right: 0; width: 36px; height: 36px; margin-top: -18px; margin-right: -18px;
+    border-radius: 50%; background: var(--grad); border: 2px solid var(--sky-light);
+    display: grid; place-items: center; box-shadow: 0 0 0 7px rgba(77,191,238,.16), 0 8px 24px rgba(29,140,190,.55);
+    will-change: transform; z-index: 3;
+  }
+  .jtoken svg { width: 18px; height: 18px; stroke: #fff; }
+  @media (max-width: 900px) { .jtrack { display: none; } }
+  .step { text-align: center; padding: 0 8px; cursor: pointer; position: relative; z-index: 2; }
+  .step .dot {
+    width: 52px; height: 52px; margin-inline: auto; border-radius: 50%;
+    background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.22);
+    display: grid; place-items: center; font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 19px;
+    transition: background .5s, border-color .5s, transform .5s, box-shadow .5s;
+  }
+  .step.active .dot { background: var(--grad); border-color: var(--sky-light); transform: scale(1.18); box-shadow: 0 0 0 9px rgba(77,191,238,.15), 0 10px 30px rgba(29,140,190,.5); }
+  .step h3 { font-size: 16.5px; margin: 18px 0 8px; transition: color .4s; }
+  .step p { font-size: 13px; line-height: 1.75; color: rgba(255,255,255,.6); transition: color .4s; }
+  .step.active h3 { color: var(--sky-light); }
+  .step.active p { color: rgba(255,255,255,.85); }
+
+  /* ============ platform / KPIs (scroll-scrubbed counters & chart) ============ */
+  .platform { padding: 110px 0; background: var(--bg-light); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 48px; will-change: transform; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 24px 22px; transition: transform .3s, box-shadow .3s; }
+  .kpi:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgba(26,44,92,.12); }
+  .kpi .t { font-size: 13px; font-weight: 700; color: var(--ink-soft); display: flex; align-items: center; gap: 8px; }
+  .kpi .t svg { width: 16px; height: 16px; stroke: var(--sky); }
+  .kpi .v { font-family: 'Cairo', sans-serif; font-weight: 800; font-size: clamp(26px, 3vw, 34px); color: var(--navy-deep); margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .kpi .v small { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+  .kpi .d { font-size: 12px; color: #16a34a; font-weight: 700; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .kpi .d svg { width: 13px; height: 13px; stroke: #16a34a; }
+
+  .board { display: grid; grid-template-columns: 1.25fr .75fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; }
+  .panel h3 { font-size: 15.5px; margin-bottom: 3px; }
+  .panel .sub { font-size: 12px; color: var(--ink-soft); margin-bottom: 12px; }
+  .chart { display: flex; align-items: flex-end; gap: 6px; height: 128px; flex: 1 1 auto; }
+  .bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; height: 100%; }
+  .bar i { display: block; border-radius: 5px 5px 3px 3px; transform: scaleY(0); transform-origin: bottom; }
+  .bar .rev { background: linear-gradient(180deg, var(--sky-light), var(--sky)); }
+  .bar .exp { background: #dbe4f0; }
+  .legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--ink-soft); font-weight: 500; }
+  .legend b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-left: 6px; vertical-align: -1px; }
+  .appt { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--bg-light); opacity: 0; transform: translateX(20px); }
+  .appt:last-child { border-bottom: none; }
+  .appt .time { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 12.5px; color: var(--navy); background: var(--bg-light); border-radius: 8px; padding: 5px 9px; }
+  .appt .pw { flex: 1; }
+  .appt .pw b { display: block; font-size: 13.5px; }
+  .appt .pw span { font-size: 11.5px; color: var(--ink-soft); }
+  .appt .st { margin-inline-start: auto; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 4px 11px; }
+  .st.ok { color: #15803d; background: #dcfce7; }
+  .st.wait { color: #a16207; background: #fef9c3; }
+  .st.sure { color: var(--sky); background: rgba(29,140,190,.1); }
+
+  /* ============ AI ============ */
+  .ai { padding: 110px 0; background: var(--grad); color: #fff; overflow: hidden; }
+  .ai .lead { color: rgba(255,255,255,.85); }
+  .agents { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 44px; max-width: 860px; }
+  @media (max-width: 700px) { .agents { grid-template-columns: 1fr; } }
+  .agent { display: flex; gap: 14px; align-items: center; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(8px); border-radius: 16px; padding: 18px 20px; transition: transform .3s, background .3s; }
+  .agent:hover { transform: translateY(-4px); background: rgba(255,255,255,.14); }
+  .agent .pulse { position: relative; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: rgba(77,191,238,.25); display: grid; place-items: center; }
+  .agent .pulse::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(77,191,238,.5); animation: pulse 2.4s ease-out infinite; }
+  .agent:nth-child(2) .pulse::after { animation-delay: .5s; }
+  .agent:nth-child(3) .pulse::after { animation-delay: 1s; }
+  .agent:nth-child(4) .pulse::after { animation-delay: 1.5s; }
+  @keyframes pulse { from { transform: scale(1); opacity: 1 } to { transform: scale(1.7); opacity: 0 } }
+  .agent .pulse svg { width: 21px; height: 21px; stroke: var(--sky-pale); }
+  .agent p { font-size: 14.5px; line-height: 1.7; font-weight: 500; }
+  .ai-note { margin-top: 30px; font-size: 13px; color: rgba(255,255,255,.65); display: flex; align-items: center; gap: 8px; }
+  .ai-note svg { width: 15px; height: 15px; stroke: var(--sky-pale); flex-shrink: 0; }
+
+  /* ============ integrations + drawn wires ============ */
+  .integrations { padding: 110px 0; background: #fff; }
+  .iwrap { position: relative; }
+  .ihub {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--bg-light); border: 1px solid var(--line); border-radius: 999px; padding: 10px 22px;
+    font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 15px; color: var(--navy-deep);
+    position: relative; z-index: 2;
+  }
+  .ihub img { height: 20px; width: auto; }
+  .ihub-row { text-align: center; margin-top: 40px; }
+  .iwires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; display: none; }
+  @media (min-width: 1001px) { .iwires { display: block; } }
+  .iwires path { fill: none; stroke: var(--sky-light); stroke-width: 2; opacity: .55; }
+  .igrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 72px; position: relative; z-index: 2; }
+  @media (max-width: 1000px) { .igrid { grid-template-columns: repeat(2, 1fr); margin-top: 44px; } }
+  @media (max-width: 560px) { .igrid { grid-template-columns: 1fr; } }
+  .icard-sm { background: var(--bg-light); border: 1px solid var(--line); border-radius: 18px; padding: 24px 18px; text-align: center; transition: transform .35s, box-shadow .35s, border-color .45s; }
+  .icard-sm:hover { transform: translateY(-8px); border-color: rgba(29,140,190,.4); box-shadow: 0 18px 40px rgba(26,44,92,.12); }
+  .icard-sm.live { border-color: rgba(29,140,190,.5); box-shadow: 0 10px 28px rgba(29,140,190,.14); }
+  .icard-sm .ic { width: 46px; height: 46px; margin-inline: auto; border-radius: 13px; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; margin-bottom: 14px; transition: border-color .45s; }
+  .icard-sm.live .ic { border-color: rgba(29,140,190,.45); }
+  .icard-sm .ic svg { width: 22px; height: 22px; stroke: var(--sky); }
+  .icard-sm b { display: block; font-size: 14.5px; font-family: 'Cairo', sans-serif; margin-bottom: 4px; }
+  .icard-sm small { font-size: 11.5px; font-weight: 700; color: var(--sky); letter-spacing: .05em; }
+  .icard-sm p { font-size: 12.5px; line-height: 1.7; color: var(--ink-soft); margin-top: 8px; }
+
+  /* ============ team value: scroll-walked accordion ============ */
+  .team { padding: 110px 0; background: var(--bg-light); }
+  .acc { margin-top: 44px; display: flex; flex-direction: column; gap: 12px; max-width: 860px; }
+  .acc-item { background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; transition: border-color .3s, box-shadow .3s; }
+  .acc-item.open { border-color: rgba(29,140,190,.45); box-shadow: 0 14px 34px rgba(26,44,92,.1); }
+  .acc-head { display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: pointer; user-select: none; position: relative; }
+  .acc-head .ic { width: 44px; height: 44px; border-radius: 13px; background: rgba(29,140,190,.1); display: grid; place-items: center; flex-shrink: 0; transition: background .3s; }
+  .acc-item.open .acc-head .ic { background: var(--grad); }
+  .acc-head .ic svg { width: 21px; height: 21px; stroke: var(--sky); transition: stroke .3s; }
+  .acc-item.open .acc-head .ic svg { stroke: #fff; }
+  .acc-head h3 { font-size: 16.5px; flex: 1; }
+  .acc-head .chev { transition: transform .35s; }
+  .acc-head .chev svg { width: 18px; height: 18px; stroke: var(--ink-soft); }
+  .acc-item.open .chev { transform: rotate(180deg); }
+  .acc-tick { position: absolute; inset-inline-start: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 4px; background: rgba(29,140,190,.12); overflow: hidden; }
+  .acc-tick i { display: block; width: 100%; height: 100%; background: linear-gradient(180deg, var(--sky-light), var(--sky)); transform: scaleY(0); transform-origin: top; }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.2,.7,.2,1); }
+  .acc-body p { padding: 0 84px 22px 24px; font-size: 14.5px; line-height: 1.9; color: var(--ink-soft); }
+  @media (max-width: 600px) { .acc-body p { padding: 0 24px 22px; } }
+
+  /* segments pills */
+  .segs { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+  .seg { display: inline-flex; align-items: center; gap: 9px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 11px 20px; font-size: 14px; font-weight: 700; transition: transform .3s, border-color .3s, box-shadow .3s; }
+  .seg:hover { transform: translateY(-4px); border-color: rgba(29,140,190,.45); box-shadow: 0 12px 26px rgba(26,44,92,.1); }
+  .seg svg { width: 17px; height: 17px; stroke: var(--sky); }
+
+  /* ============ methodology: reading-companion timeline ============ */
+  .method { padding: 110px 0; background: #fff; }
+  .tl { position: relative; margin-top: 56px; padding-right: 34px; max-width: 760px; }
+  .tl::before { content: ''; position: absolute; right: 9px; top: 8px; bottom: 8px; width: 3px; background: var(--line); border-radius: 4px; }
+  .tl .tl-fill { position: absolute; right: 9px; top: 8px; width: 3px; height: calc(100% - 16px); background: linear-gradient(180deg, var(--sky-light), var(--sky)); border-radius: 4px; transform: scaleY(0); transform-origin: top; }
+  .tstep { position: relative; padding-bottom: 44px; opacity: 0; transform: translateY(18px); }
+  .tstep:last-child { padding-bottom: 0; }
+  .tstep::before { content: ''; position: absolute; right: -32px; top: 6px; width: 17px; height: 17px; border-radius: 50%; background: #fff; border: 3px solid var(--line); transition: border-color .4s, box-shadow .4s; }
+  .tstep.lit::before { border-color: var(--sky); box-shadow: 0 0 0 5px rgba(29,140,190,.12); }
+  .tstep h3 { font-size: 18px; margin-bottom: 8px; }
+  .tstep h3 .n { color: var(--sky); margin-left: 6px; }
+  .tstep p { font-size: 14.5px; line-height: 1.85; color: var(--ink-soft); max-width: 560px; }
+  .tstep .out { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 12.5px; font-weight: 700; color: var(--sky); background: rgba(29,140,190,.08); border: 1px solid rgba(29,140,190,.22); border-radius: 999px; padding: 6px 14px; }
+  .tstep .out svg { width: 14px; height: 14px; }
+
+  /* ============ advantages ============ */
+  .adv { padding: 110px 0; background: var(--bg-light); }
+  .agrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 48px; will-change: transform; }
+  @media (max-width: 900px) { .agrid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .agrid { grid-template-columns: 1fr; } }
+  .agrid .icard .ic { width: 46px; height: 46px; border-radius: 13px; margin-bottom: 16px; }
+  .agrid .icard .ic svg { width: 22px; height: 22px; }
+  .agrid .icard p { font-size: 13.5px; line-height: 1.8; }
+
+  /* ============ slogan: words reassemble ============ */
+  .slogan { padding: 150px 0; background: var(--grad); color: #fff; text-align: center; overflow: hidden; position: relative; }
+  .slogan .q { font-family: 'Cairo', sans-serif; font-size: clamp(90px, 14vw, 170px); line-height: .4; color: rgba(77,191,238,.35); will-change: transform; }
+  .slogan h2 { font-size: clamp(32px, 5.5vw, 58px); line-height: 1.4; }
+  .slogan h2 em { font-style: normal; color: var(--sky-light); }
+  .slogan h2 .w { display: inline-block; will-change: transform, opacity; }
+  .slogan p { margin-top: 22px; font-size: clamp(15px, 2vw, 19px); color: rgba(255,255,255,.8); }
+
+  /* ============ contact ============ */
+  .contact { padding: 110px 0 90px; background: var(--bg-dark); color: #fff; }
+  .contact .lead { color: rgba(255,255,255,.78); }
+  .cgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 46px 0; max-width: 860px; }
+  @media (max-width: 800px) { .cgrid { grid-template-columns: 1fr; } }
+  .ccard { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 20px; transition: transform .3s, background .3s, border-color .3s; }
+  .ccard:hover { transform: translateY(-5px); background: rgba(255,255,255,.1); border-color: rgba(77,191,238,.5); }
+  .ccard .ic { width: 44px; height: 44px; border-radius: 12px; background: rgba(77,191,238,.18); display: grid; place-items: center; flex-shrink: 0; }
+  .ccard .ic svg { width: 20px; height: 20px; stroke: var(--sky-pale); }
+  .ccard span { display: block; font-size: 12px; color: rgba(255,255,255,.6); }
+  .ccard b { font-size: 15px; direction: ltr; unicode-bidi: embed; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .foot { margin-top: 70px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .foot img { height: 30px; }
+  .foot p { font-size: 12.5px; color: rgba(255,255,255,.5); }
+
+  /* ============ reduced motion: final states, no scrubs ============ */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+    .rv, .tstep, .appt { opacity: 1; transform: none; }
+    .bar i, .jtrack .fill, .tl .tl-fill { transform: none; }
+    .cv-card { transform: none !important; }
+    .cv-link { transform: scaleX(1); }
+    .cv-caption { opacity: 1; }
+    .jtoken, .iwires, .rail, .phint { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header id="hdr" data-theme="dark">
+  <a class="logo" href="index.html" aria-label="غين — الصفحة الرئيسية">
+    <img class="lg-white" src="assets/gain-logo-white.webp" alt="غين">
+    <img class="lg-navy" src="assets/gain-logo-navy.webp" alt="">
+  </a>
+  <nav id="nav">
+    <a href="#why">لماذا غين</a>
+    <a href="#products">منتجاتنا</a>
+    <a href="#journey">رحلة المريض</a>
+    <a href="#platform">من داخل المنصة</a>
+    <a href="#partnership">شراكتنا</a>
+    <a href="#contact">تواصل</a>
+  </nav>
+  <a class="hbtn" href="slides.html"><i data-lucide="presentation"></i> العرض التقديمي</a>
+</header>
+
+<nav class="rail" id="rail" data-theme="dark" aria-label="أقسام الصفحة"></nav>
+
+<!-- HERO -->
+<section class="hero" id="top" data-theme="dark">
+  <div class="orb o1" data-px="-.06"></div>
+  <div class="orb o2" data-px=".05"></div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy" id="heroCopy">
+      <img class="logo-big rv in" src="assets/gain-logo-white.webp" alt="غين">
+      <h1 class="rv in">منصة تشغيل صحية<br><em>موحّدة</em></h1>
+      <p class="lead rv in" data-d="1">كل رحلة مريض في مسار واحد — من الحجز إلى الفاتورة. نربط المواعيد والسجل الطبي والفوترة والتأمين والمخزون والتقارير في منظومة واحدة.</p>
+      <div class="hero-ctas rv in" data-d="2">
+        <a class="btn btn-primary" href="#why"><i data-lucide="compass"></i> استكشف المنصة</a>
+        <a class="btn btn-ghost" href="slides.html"><i data-lucide="play"></i> شاهد العرض</a>
+      </div>
+    </div>
+    <div class="float-stack" id="floatStack">
+      <div class="fline" id="fline"></div>
+      <div class="fwrap fc1"><div class="fcard"><div class="ic"><i data-lucide="calendar-check"></i></div><div><b>موعد جديد مؤكّد</b><span>اليوم · 09:30 صباحًا</span></div></div></div>
+      <div class="fwrap fc2"><div class="fcard"><div class="ic"><i data-lucide="file-heart"></i></div><div><b>ملف طبي محدّث</b><span>خطة علاج بخطوات واضحة</span></div></div></div>
+      <div class="fwrap fc3"><div class="fcard"><div class="ic"><i data-lucide="shield-check"></i></div><div><b>مطالبة تأمين مقبولة</b><span>فاتورة مرتبطة بالخدمة</span></div></div></div>
+    </div>
+  </div>
+  <div class="scroll-cue" id="scrollCue"><div class="wheel"></div>مرّر للأسفل</div>
+</section>
+
+<!-- WHY -->
+<section class="why" id="why" data-theme="dark">
+  <div class="wrap">
+    <span class="kicker on-dark rv"><i data-lucide="help-circle" style="width:15px;height:15px"></i> لماذا غين؟</span>
+    <h2 class="h2 rv" data-d="1">ليست المشكلة في كثرة العمل،<br>بل في تشتّته</h2>
+    <p class="why-quote rv" data-d="2">في زحام المواعيد والملفات والفواتير، تفقد العيادة وقتاً وجهداً وإيراداً دون أن تلاحظ. <b>«غين» ليست مجرد نظام إداري</b>، بل شريكك التشغيلي الذي يربط هذه الأطراف المتناثرة في مسار واحد واضح.</p>
+
+    <div class="converge-wrap rv" data-d="3">
+      <div class="converge" id="converge">
+        <div class="cv-card"><i data-lucide="calendar-x"></i> موعد هنا</div>
+        <div class="cv-link"></div>
+        <div class="cv-card"><i data-lucide="folder-open"></i> ملف هناك</div>
+        <div class="cv-link"></div>
+        <div class="cv-card"><i data-lucide="receipt"></i> فاتورة معلّقة</div>
+      </div>
+      <p class="cv-caption" id="cvCaption"><i data-lucide="check-circle-2" style="width:16px;height:16px;vertical-align:-3px"></i> مع غين: مسار واحد واضح — من الحجز إلى الفاتورة</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO / VISION -->
+<section class="who" data-theme="light">
+  <div class="wrap">
+    <span class="kicker rv"><i data-lucide="building-2" style="width:15px;height:15px"></i> من نحن</span>
+    <h2 class="h2 rv" data-d="1">شركة تقنية سعودية تبني منصات التشغيل</h2>
+    <p class="lead rv" data-d="2">«غين لتقنية المعلومات» متخصصة في بناء منصات تشغيل حديثة تساعد المنشآت على تنظيم عملياتها وتوحيد بياناتها وتحسين قراراتها. نركّز على العيادات والمجمعات الطبية في المملكة، بمنصة تفهم واقع العمل اليومي لكل دور داخل المنشأة الصحية.</p>
+    <div class="cards-3">
+      <div class="icard rv" data-d="1"><div class="ic"><i data-lucide="eye"></i></div><h3>الرؤية</h3><p>أن تكون غين منصة التشغيل الصحية التي تعتمد عليها العيادات والمجمعات الطبية في المملكة لتقديم رعاية أفضل وتشغيل أكثر كفاءة.</p></div>
+      <div class="icard rv" data-d="2"><div class="ic"><i data-lucide="send"></i></div><h3>الرسالة</h3><p>نبني منصة تشغيل صحية موحّدة ومدعومة بالذكاء الاصطناعي، تخفّف الجهد وتقلّل الأخطاء، وتساعد على تدفّق المعلومات بين الفرق بوضوح.</p></div>
+      <div class="icard rv" data-d="3"><div class="ic"><i data-lucide="users"></i></div><h3>منصة واحدة لكل الأدوار</h3><p>من الاستقبال إلى الطبيب إلى المحاسبة والتأمين إلى الإدارة — الجميع يعمل على بيانات واحدة محدّثة.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section class="values" data-theme="light">
+  <div class="wrap">
+    <span class="kicker rv"><i data-lucide="heart-handshake" style="width:15px;height:15px"></i> قيمنا في العمل</span>
+    <h2 class="h2 rv" data-d="1">ما الذي نؤمن به</h2>
+    <div class="vals">
+      <div class="vcard rv" data-d="1"><div class="ic"><i data-lucide="feather"></i></div><h3>البساطة</h3><p>أداة تجعل العمل اليومي أسهل، لا نظام يزيد الضغط.</p></div>
+      <div class="vcard rv" data-d="2"><div class="ic"><i data-lucide="shield-check"></i></div><h3>الثقة</h3><p>نظام موثوق وصلاحيات واضحة لبيانات المرضى والمال.</p></div>
+      <div class="vcard rv" data-d="3"><div class="ic"><i data-lucide="link-2"></i></div><h3>الترابط</h3><p>العيادة رحلة واحدة، لا أقسام منفصلة.</p></div>
+      <div class="vcard rv" data-d="4"><div class="ic"><i data-lucide="brain-circuit"></i></div><h3>الذكاء العملي</h3><p>ذكاء يخدم العمل، لا ميزة دعائية.</p></div>
+      <div class="vcard rv" data-d="5"><div class="ic"><i data-lucide="trending-up"></i></div><h3>الشراكة والنمو</h3><p>نجاحنا يُقاس بقيمة العميل ونمو المنصة معه.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS: pinned scroll-morph -->
+<div class="track track-products" id="products" data-theme="light">
+  <section class="products pin">
+    <div class="wrap">
+      <span class="kicker rv"><i data-lucide="boxes" style="width:15px;height:15px"></i> منتجاتنا</span>
+      <h2 class="h2 rv" data-d="1">منتجان يغطّيان تشغيل عيادتك ومؤسستك</h2>
+      <div style="display:flex;align-items:center;flex-wrap:wrap">
+        <div class="ptoggle rv" data-d="2" id="ptoggle">
+          <div class="pill" id="ppill"></div>
+          <button class="active" data-p="his">GAIN HIS</button>
+          <button data-p="erp">GAIN ERP</button>
+        </div>
+        <span class="phint rv" data-d="2"><i data-lucide="mouse"></i> مرّر للتبديل بين المنتجين</span>
+      </div>
+      <div class="pdescs rv" data-d="3">
+        <p class="pdesc" data-pk="his" id="descHis">منصة تشغيل صحية موحّدة للعيادات والمجمعات الطبية: تجمع المواعيد والاستقبال والسجل الطبي والفوترة والتأمين والتحصيل RCM والمخزون والتقارير والتكاملات في منظومة واحدة.</p>
+        <p class="pdesc" data-pk="erp" id="descErp" style="opacity:0">إدارة موارد المنشآت للمنشآت والمجموعات الطبية: تدير المالية والمشتريات والمستودعات والموارد البشرية والفوترة الإلكترونية والتقارير ضمن منظومة أكثر ترابطاً — تربط الفروع والإدارات بإدارة مركزية أوضح.</p>
+      </div>
+      <div class="pgrids rv" data-d="3">
+        <div class="pgrid" data-pk="his" id="gridHis">
+          <div class="mcard"><div class="ic"><i data-lucide="calendar-check"></i></div><div><b>المواعيد والاستقبال</b><span>تسجيل أسهل للمراجعين وتنظيم أوضح للحجوزات.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="file-heart"></i></div><div><b>السجل الطبي الإلكتروني</b><span>توثيق مرن للزيارة ووصول سريع لمعلومات المريض.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="receipt"></i></div><div><b>الخدمات والفوترة</b><span>ربط الخدمة بالفاتورة وروابط الدفع ضمن رحلة المريض.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="shield-check"></i></div><div><b>التأمين والتحصيل RCM</b><span>إدارة المطالبات والتحصيل وتقليل أسباب المرفوضات.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="package"></i></div><div><b>المخزون الطبي</b><span>متابعة المستلزمات وربطها بالاستهلاك الفعلي.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="bar-chart-3"></i></div><div><b>التقارير ولوحات المتابعة</b><span>مؤشرات صحية وتشغيلية تدعم قرار الإدارة.</span></div></div>
+        </div>
+        <div class="pgrid off" data-pk="erp" id="gridErp" aria-hidden="true">
+          <div class="mcard"><div class="ic"><i data-lucide="landmark"></i></div><div><b>المالية والمحاسبة</b><span>إدارة مالية منظّمة ومترابطة عبر المنشأة.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="shopping-cart"></i></div><div><b>المشتريات</b><span>دورة شراء واضحة من الطلب إلى الاستلام.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="warehouse"></i></div><div><b>المستودعات</b><span>متابعة الأصناف والحركة بين الفروع.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="users"></i></div><div><b>الموارد البشرية</b><span>شؤون الموظفين والإجراءات الإدارية في مكان واحد.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="file-check-2"></i></div><div><b>الفوترة الإلكترونية</b><span>فواتير معتمدة وفق المتطلبات النظامية.</span></div></div>
+          <div class="mcard"><div class="ic"><i data-lucide="pie-chart"></i></div><div><b>التقارير الإدارية والمالية</b><span>رؤية مركزية لأداء الفروع والإدارات.</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- JOURNEY: pinned scrub + patient token -->
+<div class="track track-journey" id="journey" data-theme="dark">
+  <section class="journey pin">
+    <div class="wrap">
+      <span class="kicker on-dark rv"><i data-lucide="route" style="width:15px;height:15px"></i> GAIN HIS · رحلة المريض</span>
+      <h2 class="h2 rv" data-d="1">رحلة المريض، من الحجز إلى التحصيل</h2>
+      <p class="lead rv" data-d="2">كل خطوة تسلّم التي بعدها تلقائياً — دون إعادة إدخال أو ملفات جانبية. <span style="opacity:.65">مرّر لترافق المريض في رحلته، أو اضغط على أي خطوة.</span></p>
+      <div class="steps rv" data-d="3" id="steps">
+        <div class="jtrack" id="jtrack">
+          <div class="fill" id="jfill"></div>
+          <div class="jtoken" id="jtoken" aria-hidden="true"><i data-lucide="user-round"></i></div>
+        </div>
+        <div class="step" data-i="0" tabindex="0" role="button" aria-label="الخطوة 1: حجز الموعد وتأكيده"><div class="dot">1</div><h3>حجز الموعد وتأكيده</h3><p>حجز عبر الاستقبال أو رابط مباشر، مع تذكير تلقائي للمريض.</p></div>
+        <div class="step" data-i="1" tabindex="0" role="button" aria-label="الخطوة 2: الاستقبال والفرز"><div class="dot">2</div><h3>الاستقبال والفرز</h3><p>تسجيل الحضور وتحديث حالة الموعد أمام الفريق لحظياً.</p></div>
+        <div class="step" data-i="2" tabindex="0" role="button" aria-label="الخطوة 3: الزيارة والتوثيق"><div class="dot">3</div><h3>الزيارة والتوثيق</h3><p>سجل طبي مرن يوثّق التشخيص وخطة العلاج بخطوات أقل.</p></div>
+        <div class="step" data-i="3" tabindex="0" role="button" aria-label="الخطوة 4: الفوترة والتحصيل"><div class="dot">4</div><h3>الفوترة والتحصيل</h3><p>فاتورة مرتبطة بالخدمة، ومطالبة تأمين جاهزة للمتابعة.</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PLATFORM -->
+<section class="platform" id="platform" data-theme="light">
+  <div class="wrap">
+    <span class="kicker rv"><i data-lucide="layout-dashboard" style="width:15px;height:15px"></i> من داخل المنصة</span>
+    <h2 class="h2 rv" data-d="1">شاشة واحدة تُدير عيادتك بوضوح</h2>
+    <p class="lead rv" data-d="2">واجهة تنفيذية تجمع المؤشرات والمواعيد والتحصيل في مكان واحد — مرّر ببطء وشاهد اليوم التشغيلي يتشكّل أمامك.</p>
+
+    <div class="kpis" id="kpis">
+      <div class="kpi rv" data-d="1"><div class="t"><i data-lucide="wallet"></i> إيراد اليوم</div><div class="v" aria-label="18,450 ريال سعودي"><span class="count" data-to="18450" aria-hidden="true">0</span> <small>ر.س</small></div><div class="d"><i data-lucide="trending-up"></i> أداء متصاعد</div></div>
+      <div class="kpi rv" data-d="2"><div class="t"><i data-lucide="calendar-days"></i> مواعيد اليوم</div><div class="v" aria-label="42 موعداً"><span class="count" data-to="42" aria-hidden="true">0</span> <small>موعداً</small></div><div class="d"><i data-lucide="trending-up"></i> حجوزات نشطة</div></div>
+      <div class="kpi rv" data-d="3"><div class="t"><i data-lucide="badge-check"></i> نسبة التحصيل</div><div class="v" aria-label="93 بالمئة"><span class="count" data-to="93" aria-hidden="true">0</span><small>%</small></div><div class="d"><i data-lucide="trending-up"></i> مطالبات سليمة</div></div>
+      <div class="kpi rv" data-d="4"><div class="t"><i data-lucide="piggy-bank"></i> صافي ربح اليوم</div><div class="v" aria-label="6,120 ريال سعودي"><span class="count" data-to="6120" aria-hidden="true">0</span> <small>ر.س</small></div><div class="d"><i data-lucide="trending-up"></i> بعد المصروفات</div></div>
+    </div>
+
+    <div class="board rv" data-d="3">
+      <div class="panel">
+        <h3>الإيراد والمصروف</h3>
+        <div class="sub">آخر 12 أسبوعاً — يكتمل الرسم مع تمريرك</div>
+        <div class="chart" id="chart"></div>
+        <div class="legend"><span><b style="background:var(--sky)"></b>الإيراد</span><span><b style="background:#dbe4f0"></b>المصروف</span></div>
+      </div>
+      <div class="panel" id="apptPanel">
+        <h3>مواعيد اليوم</h3>
+        <div class="sub">لحظة بلحظة أمام فريقك</div>
+        <div class="appt"><div class="time">09:00</div><div class="pw"><b>نورة القحطاني</b><span>جلدية</span></div><span class="st ok">مكتمل</span></div>
+        <div class="appt"><div class="time">10:15</div><div class="pw"><b>سارة العتيبي</b><span>تقويم أسنان</span></div><span class="st sure">مؤكد</span></div>
+        <div class="appt"><div class="time">11:30</div><div class="pw"><b>محمد الشهري</b><span>طب عام</span></div><span class="st wait">بانتظار</span></div>
+        <div class="appt"><div class="time">12:15</div><div class="pw"><b>هند الدوسري</b><span>علاج طبيعي</span></div><span class="st sure">مؤكد</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI -->
+<section class="ai" id="ai" data-theme="dark">
+  <div class="wrap">
+    <span class="kicker on-dark rv"><i data-lucide="sparkles" style="width:15px;height:15px"></i> الذكاء العملي في غين</span>
+    <h2 class="h2 rv" data-d="1">ذكاء اصطناعي يخفّف الجهد اليومي،<br>لا يستعرض تقنياً</h2>
+    <p class="lead rv" data-d="2">وكلاء لحالات استخدام عملية ومنخفضة المخاطر، يعملون ضمن صلاحيات المستخدمين.</p>
+    <div class="agents">
+      <div class="agent rv" data-d="1"><div class="pulse"><i data-lucide="zap"></i></div><p>وصول سريع للمعلومات والإجراءات حسب الصلاحيات</p></div>
+      <div class="agent rv" data-d="2"><div class="pulse"><i data-lucide="phone-call"></i></div><p>دعم الاستقبال في الأسئلة الروتينية وتأكيد الحجوزات</p></div>
+      <div class="agent rv" data-d="3"><div class="pulse"><i data-lucide="bell-ring"></i></div><p>التنبيه للفواتير المفتوحة ومرفوضات التأمين</p></div>
+      <div class="agent rv" data-d="4"><div class="pulse"><i data-lucide="package-search"></i></div><p>متابعة مؤشرات المخزون والمواد الحساسة قبل نفادها</p></div>
+    </div>
+    <p class="ai-note rv" data-d="5"><i data-lucide="shield-alert"></i> يعمل ضمن حدود الصلاحيات، ولا يقدّم أي استشارات أو تشخيصات طبية.</p>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="integrations" id="integrations" data-theme="light">
+  <div class="wrap iwrap" id="iwrap">
+    <span class="kicker rv"><i data-lucide="plug-zap" style="width:15px;height:15px"></i> شركاؤنا وتكاملاتنا</span>
+    <h2 class="h2 rv" data-d="1">منصة مترابطة تربط أنظمتك بالأنظمة الوطنية</h2>
+    <p class="lead rv" data-d="2">قابلية ربط تقلّل الإدخال اليدوي وتحسّن انسيابية العمل — مرّر وشاهد غين تتصل بكل نظام.</p>
+    <div class="ihub-row rv" data-d="2"><span class="ihub" id="ihub"><img src="assets/gain-logo-navy.webp" alt="غين"> منصة غين</span></div>
+    <svg class="iwires" id="iwires" aria-hidden="true"></svg>
+    <div class="igrid" id="igrid">
+      <div class="icard-sm rv" data-d="1"><div class="ic"><i data-lucide="file-check-2"></i></div><b>الفوترة الإلكترونية</b><small>ZATCA</small><p>دعم متطلبات الفوترة الإلكترونية النظامية.</p></div>
+      <div class="icard-sm rv" data-d="2"><div class="ic"><i data-lucide="heart-pulse"></i></div><b>منصة نفيس</b><small>NPHIES</small><p>المطالبات والموافقات التأمينية.</p></div>
+      <div class="icard-sm rv" data-d="3"><div class="ic"><i data-lucide="credit-card"></i></div><b>بوابات الدفع</b><small>PAYMENTS</small><p>روابط ومدفوعات رقمية تسهّل التحصيل.</p></div>
+      <div class="icard-sm rv" data-d="4"><div class="ic"><i data-lucide="message-circle"></i></div><b>قنوات التواصل</b><small>SMS · WHATSAPP</small><p>رسائل نصية وواتساب الأعمال للتنبيهات.</p></div>
+      <div class="icard-sm rv" data-d="5"><div class="ic"><i data-lucide="network"></i></div><b>أنظمة خارجية</b><small>CRM · API</small><p>CRM ومراكز الاتصال وأدوات التقارير.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM VALUE (scroll-walked) -->
+<div class="track track-team" id="partnership" data-theme="light">
+  <section class="team pin">
+    <div class="wrap">
+      <span class="kicker rv"><i data-lucide="handshake" style="width:15px;height:15px"></i> شراكتنا معك · القيمة لكل فريق</span>
+      <h2 class="h2 rv" data-d="1">منفعة واضحة لكل دور داخل العيادة</h2>
+      <p class="lead rv" data-d="2" style="font-size:14.5px">مرّر لتزور كل دور في جولتك على العيادة — أو اضغط على أي دور مباشرة.</p>
+      <div class="acc rv" data-d="2" id="acc">
+        <div class="acc-item open">
+          <div class="acc-head"><div class="acc-tick"><i></i></div><div class="ic"><i data-lucide="concierge-bell"></i></div><h3>موظف الاستقبال</h3><div class="chev"><i data-lucide="chevron-down"></i></div></div>
+          <div class="acc-body"><p>خطوات أوضح للمواعيد، تسجيل أسهل للمراجعين، وروابط دفع تقلّل الزحام والاتصالات المتكررة.</p></div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-head"><div class="acc-tick"><i></i></div><div class="ic"><i data-lucide="stethoscope"></i></div><h3>الطبيب والممارس</h3><div class="chev"><i data-lucide="chevron-down"></i></div></div>
+          <div class="acc-body"><p>سجل طبي مرن وتوثيق للزيارة بخطوات أقل، ليبقى التركيز الأكبر على الرعاية.</p></div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-head"><div class="acc-tick"><i></i></div><div class="ic"><i data-lucide="calculator"></i></div><h3>المحاسب والتأمين</h3><div class="chev"><i data-lucide="chevron-down"></i></div></div>
+          <div class="acc-body"><p>ربط أوضح بين الخدمة والفاتورة والمطالبة والتحصيل؛ لمتابعة الإيرادات وتقليل المرفوضات.</p></div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-head"><div class="acc-tick"><i></i></div><div class="ic"><i data-lucide="package"></i></div><h3>مسؤول المخزون</h3><div class="chev"><i data-lucide="chevron-down"></i></div></div>
+          <div class="acc-body"><p>متابعة حركة المستلزمات وربطها بالاستهلاك الفعلي، مع تنبيهات تقلّل الهدر والنقص المفاجئ.</p></div>
+        </div>
+        <div class="acc-item">
+          <div class="acc-head"><div class="acc-tick"><i></i></div><div class="ic"><i data-lucide="briefcase"></i></div><h3>الإدارة والملّاك</h3><div class="chev"><i data-lucide="chevron-down"></i></div></div>
+          <div class="acc-body"><p>لوحات متابعة لقراءة الأداء المالي والتشغيلي، للانتقال من الإدارة بالانطباع إلى الإدارة بالمعلومة.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- SEGMENTS -->
+<section class="team" id="segments" data-theme="light" style="padding-top:0">
+  <div class="wrap">
+    <h2 class="h2 rv" style="font-size:clamp(22px,3vw,30px)">لمن صُممت غين؟</h2>
+    <p class="lead rv" data-d="1">للعيادات والمجمعات الصغيرة والمتوسطة في المملكة.</p>
+    <div class="segs rv" data-d="2">
+      <span class="seg"><i data-lucide="smile"></i> عيادات الأسنان</span>
+      <span class="seg"><i data-lucide="sparkle"></i> الجلدية والتجميل</span>
+      <span class="seg"><i data-lucide="house-plus"></i> الأسرة والطب العام</span>
+      <span class="seg"><i data-lucide="activity"></i> مراكز العلاج الطبيعي</span>
+      <span class="seg"><i data-lucide="hospital"></i> المجمعات متعددة التخصصات</span>
+    </div>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section class="method" id="method" data-theme="light">
+  <div class="wrap">
+    <span class="kicker rv"><i data-lucide="map" style="width:15px;height:15px"></i> منهجيتنا</span>
+    <h2 class="h2 rv" data-d="1">انتقال منظّم في أربع خطوات</h2>
+    <p class="lead rv" data-d="2">نجاح النظام لا يعتمد على التقنية فقط، بل على طريقة التطبيق والتبنّي داخل العيادة — الخط يتقدّم مع قراءتك.</p>
+    <div class="tl" id="tl">
+      <div class="tl-fill" id="tlFill"></div>
+      <div class="tstep"><h3><span class="n">01</span> الاستكشاف وفهم الاحتياج</h3><p>فهم طريقة العمل ونقاط الألم في التشغيل والفوترة والتأمين.</p><span class="out"><i data-lucide="file-output"></i> المخرَج: خطة تطبيق</span></div>
+      <div class="tstep"><h3><span class="n">02</span> التهيئة ونقل البيانات</h3><p>تهيئة المنصة بما يناسب المنشأة، ونقل البيانات الأساسية وفق خطة.</p><span class="out"><i data-lucide="server-cog"></i> المخرَج: منصة جاهزة</span></div>
+      <div class="tstep"><h3><span class="n">03</span> التدريب والتشغيل</h3><p>تدريب عملي لكل فريق حسب دوره، من الاستقبال إلى الإدارة.</p><span class="out"><i data-lucide="graduation-cap"></i> المخرَج: فريق جاهز</span></div>
+      <div class="tstep"><h3><span class="n">04</span> الدعم والتحسين</h3><p>دعم ومتابعة مستمرة وتحسين للتجربة بناءً على استخدام المنشأة.</p><span class="out"><i data-lucide="refresh-ccw"></i> المخرَج: تحسين مستمر</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ADVANTAGES -->
+<section class="adv" id="adv" data-theme="light">
+  <div class="wrap">
+    <span class="kicker rv"><i data-lucide="award" style="width:15px;height:15px"></i> مميزاتنا</span>
+    <h2 class="h2 rv" data-d="1">لماذا غين</h2>
+    <div class="agrid" id="agrid">
+      <div class="icard rv" data-d="1"><div class="ic"><i data-lucide="combine"></i></div><h3 style="font-size:17px;margin-bottom:8px">منصة موحّدة</h3><p>العمليات الطبية والمالية والتشغيلية والمخزون في مكان واحد.</p></div>
+      <div class="icard rv" data-d="2"><div class="ic"><i data-lucide="settings-2"></i></div><h3 style="font-size:17px;margin-bottom:8px">منصة مرنة</h3><p>تتكيّف مع حجم العيادة وطريقة عملها دون تعقيد زائد.</p></div>
+      <div class="icard rv" data-d="3"><div class="ic"><i data-lucide="rocket"></i></div><h3 style="font-size:17px;margin-bottom:8px">تحديثات مستمرة</h3><p>تطوير دائم لتحسين التجربة ومواكبة احتياجات السوق.</p></div>
+      <div class="icard rv" data-d="1"><div class="ic"><i data-lucide="plug"></i></div><h3 style="font-size:17px;margin-bottom:8px">قابلة للتكامل</h3><p>تربط الأنظمة الوطنية والتشغيلية التي تحتاجها المنشأة.</p></div>
+      <div class="icard rv" data-d="2"><div class="ic"><i data-lucide="expand"></i></div><h3 style="font-size:17px;margin-bottom:8px">مصمّمة للنمو</h3><p>تناسب العيادة الصغيرة وتدعم توسّعها إلى عدة فروع.</p></div>
+      <div class="icard rv" data-d="3"><div class="ic"><i data-lucide="bar-chart-3"></i></div><h3 style="font-size:17px;margin-bottom:8px">تقارير أوضح</h3><p>تحوّل بيانات اليوم التشغيلي إلى مؤشرات تدعم القرار.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SLOGAN -->
+<section class="slogan" id="slogan" data-theme="dark">
+  <div class="wrap">
+    <div class="q" id="sq">”</div>
+    <h2 id="sloganLine">كل رحلة مريض<br>في <em>مسار واحد</em></h2>
+    <p class="rv" data-d="2">غين… من زحام التشغيل إلى وضوح القرار.</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact" data-theme="dark">
+  <div class="wrap">
+    <span class="kicker on-dark rv"><i data-lucide="mail" style="width:15px;height:15px"></i> تواصل معنا</span>
+    <h2 class="h2 rv" data-d="1">من التشتّت إلى الوضوح — لنُرِك كيف</h2>
+    <p class="lead rv" data-d="2">احجز ديمو مخصّصاً لواقع عيادتك، وشاهد كيف تربط غين المواعيد والسجل والفوترة والتأمين والمخزون والتقارير في منصة واحدة.</p>
+    <div class="cgrid">
+      <a class="ccard rv" data-d="1" href="https://www.gain.sa" target="_blank" rel="noopener"><div class="ic"><i data-lucide="globe"></i></div><div><span>الموقع</span><b>www.gain.sa</b></div></a>
+      <a class="ccard rv" data-d="2" href="mailto:info@gain.sa"><div class="ic"><i data-lucide="mail"></i></div><div><span>البريد</span><b>info@gain.sa</b></div></a>
+      <a class="ccard rv" data-d="3" href="tel:+966550519510"><div class="ic"><i data-lucide="phone"></i></div><div><span>الهاتف</span><b>+966 55 051 9510</b></div></a>
+    </div>
+    <div class="cta-row rv" data-d="3">
+      <a class="btn btn-primary" href="mailto:info@gain.sa?subject=حجز جلسة تجريبية"><i data-lucide="calendar-plus"></i> احجز جلستك التجريبية</a>
+      <a class="btn btn-ghost" href="slides.html"><i data-lucide="presentation"></i> العرض التقديمي</a>
+      <a class="btn btn-ghost" href="index.html"><i data-lucide="home"></i> الصفحة الرئيسية</a>
+    </div>
+    <div class="foot">
+      <img src="assets/gain-logo-white.webp" alt="غين">
+      <p>غين لتقنية المعلومات · منصة تشغيل صحية موحّدة</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  lucide.createIcons();
+
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mqMobile = matchMedia('(max-width: 900px)');
+
+  const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+  const seg = (p, a, b) => clamp((p - a) / (b - a), 0, 1);
+  const eOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const eInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const fmt = n => n.toLocaleString('en-US');
+
+  /* ==================================================================
+     Scroll engine: one passive listener + one rAF loop.
+     Geometry cached; re-measured on resize / font load.
+     ================================================================== */
+  const S = { y: scrollY, prevY: scrollY, vy: 0, vh: innerHeight, mobile: mqMobile.matches, mods: [] };
+  const register = m => { S.mods.push(m); return m; };
+  const pinP = m => clamp((S.y - m.top) / (m.trackH - S.vh), 0, 1);              // pinned scenes
+  const entryP = (m, span) => clamp((S.y + S.vh - m.top) / (S.vh * span), 0, 1); // free-flow scenes
+
+  function measureAll() {
+    S.vh = innerHeight;
+    S.mobile = mqMobile.matches;
+    S.mods.forEach(m => {
+      if (m.el) {
+        const r = m.el.getBoundingClientRect();
+        m.top = r.top + scrollY;
+        m.trackH = m.el.offsetHeight;
+        m.bottom = m.top + m.trackH;
+      }
+      m.measure && m.measure();
+    });
+  }
+
+  function frame() {
+    const y = S.y;
+    for (const m of S.mods) {
+      if (m.el && (y + S.vh < m.top - S.vh || y > m.bottom + S.vh)) continue; // off-screen gate
+      m.frame && m.frame();
+    }
+  }
+
+  let lastY = -1;
+  function loop() {
+    requestAnimationFrame(loop);
+    S.vy += ((S.y - S.prevY) - S.vy) * .12;
+    S.prevY = S.y;
+    if (S.y === lastY && Math.abs(S.vy) < .05) return;
+    lastY = S.y;
+    frame();
+  }
+
+  addEventListener('scroll', () => { S.y = scrollY; }, { passive: true });
+  let rzT;
+  addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { measureAll(); lastY = -1; }, 150); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measureAll(); lastY = -1; });
+
+  /* ---- one-shot reveal for non-scrubbed elements ---- */
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .15, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.rv:not(.in)').forEach(el => io.observe(el));
+
+  /* ---- nav active state ---- */
+  const navLinks = [...document.querySelectorAll('#nav a')];
+  const secIO = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-45% 0px -45% 0px' });
+  ['why', 'products', 'journey', 'platform', 'partnership', 'contact'].forEach(id => {
+    const el = document.getElementById(id); if (el) secIO.observe(el);
+  });
+
+  /* ==================================================================
+     Global chrome: progress bar, header theme, section rail
+     ================================================================== */
+  const hdr = document.getElementById('hdr');
+  const bar = document.getElementById('progress');
+  const rail = document.getElementById('rail');
+  const RAIL_SECTIONS = [
+    ['top', 'البداية'], ['why', 'لماذا غين'], ['products', 'منتجاتنا'], ['journey', 'رحلة المريض'],
+    ['platform', 'من داخل المنصة'], ['ai', 'الذكاء العملي'], ['integrations', 'التكاملات'],
+    ['partnership', 'شراكتنا'], ['method', 'المنهجية'], ['contact', 'تواصل'],
+  ];
+  rail.innerHTML = RAIL_SECTIONS.map(([id, label]) =>
+    `<a href="#${id}" data-sec="${id}" data-label="${label}" aria-label="${label}"></a>`).join('');
+  const railDots = [...rail.children];
+
+  register({
+    el: document.body,
+    themed: [], railMap: {}, docH: 1,
+    measure() {
+      this.docH = Math.max(1, document.documentElement.scrollHeight - S.vh);
+      this.themed = [...document.querySelectorAll('body > [data-theme]')]
+        .filter(el => el.tagName !== 'HEADER' && el.tagName !== 'NAV')
+        .map(el => ({ top: el.getBoundingClientRect().top + scrollY, t: el.dataset.theme }));
+      this.railMap = {};
+      RAIL_SECTIONS.forEach(([id]) => {
+        const el = document.getElementById(id);
+        if (el) this.railMap[id] = el.getBoundingClientRect().top + scrollY;
+      });
+    },
+    frame() {
+      bar.style.transform = `scaleX(${clamp(S.y / this.docH, 0, 1)})`;
+      hdr.classList.toggle('scrolled', S.y > 40);
+      const probe = S.y + 74;
+      let cur = this.themed[0];
+      for (const s of this.themed) { if (probe >= s.top - 8) cur = s; else break; }
+      if (cur && hdr.dataset.theme !== cur.t) { hdr.dataset.theme = cur.t; rail.dataset.theme = cur.t; }
+      const mid = S.y + S.vh * .5;
+      let act = 'top';
+      for (const [id] of RAIL_SECTIONS) {
+        if (this.railMap[id] !== undefined && mid >= this.railMap[id]) act = id;
+      }
+      if (this._act !== act) {
+        this._act = act;
+        railDots.forEach(d => d.classList.toggle('active', d.dataset.sec === act));
+      }
+    }
+  });
+
+  /* ==================================================================
+     Hero: exit choreography — copy lifts, cards scatter in depth
+     ================================================================== */
+  register({
+    el: document.querySelector('.hero'),
+    copy: document.getElementById('heroCopy'),
+    cue: document.getElementById('scrollCue'),
+    fline: document.getElementById('fline'),
+    wraps: [...document.querySelectorAll('.fwrap')],
+    orbs: [...document.querySelectorAll('.hero .orb')],
+    D: [{ x: 46, y: 90, r: 4 }, { x: -34, y: 150, r: -3 }, { x: 62, y: 210, r: 2 }],
+    frame() {
+      if (REDUCED) return;
+      const p = clamp(S.y / S.vh, 0, 1.2);
+      if (p >= 1.19 && this._parked) return;
+      this._parked = p >= 1.19;
+      this.copy.style.transform = `translateY(${S.y * .18}px)`;
+      this.copy.style.opacity = clamp(1 - p * 1.15, 0, 1);
+      this.wraps.forEach((w, i) => {
+        const d = this.D[i];
+        w.style.transform = `translate(${d.x * p}px, ${d.y * p}px) rotate(${d.r * p * 2}deg)`;
+        w.style.opacity = clamp(1 - p * 1.05, 0, 1);
+      });
+      this.fline.style.transform = `scaleY(${clamp(1 - p * .6, 0, 1)})`;
+      this.cue.style.opacity = clamp(1 - S.y / 160, 0, 1);
+      this.orbs.forEach(o => o.style.transform = `translateY(${S.y * parseFloat(o.dataset.px || 0)}px)`);
+    }
+  });
+
+  /* ==================================================================
+     Why: converge scrub (desktop) / one-shot (mobile & reduced)
+     ================================================================== */
+  const converge = document.getElementById('converge');
+  const cvCards = [...converge.querySelectorAll('.cv-card')];
+  const cvLinks = [...converge.querySelectorAll('.cv-link')];
+  const cvCaption = document.getElementById('cvCaption');
+  const POSE = [[90, -44, 7], [0, 40, -5], [-90, -30, 4]];
+  register({
+    el: document.querySelector('.converge-wrap'),
+    frame() {
+      if (REDUCED || S.mobile) return;
+      const p = entryP(this, .8);
+      const e = eOutCubic(seg(p, 0, .62));
+      cvCards.forEach((c, i) => {
+        const [x, y, r] = POSE[i];
+        c.style.transform = `translate(${x * (1 - e)}px, ${y * (1 - e)}px) rotate(${r * (1 - e)}deg)`;
+      });
+      cvLinks.forEach((l, i) => {
+        l.style.transform = `scaleX(${seg(p, .6 + i * .1, .78 + i * .1)})`;
+      });
+      cvCaption.style.opacity = seg(p, .86, 1);
+      const locked = p > .92;
+      if (locked !== this._locked) { this._locked = locked; converge.classList.toggle('locked', locked); }
+    }
+  });
+  if (mqMobile.matches && !REDUCED) {
+    const cvIO = new IntersectionObserver(es => es.forEach(en => {
+      if (en.isIntersecting) {
+        converge.classList.add('in');
+        converge.closest('.converge-wrap').classList.add('in');
+        cvIO.disconnect();
+      }
+    }), { threshold: .4 });
+    cvIO.observe(converge);
+  }
+  if (REDUCED) converge.classList.add('locked');
+
+  /* ==================================================================
+     Products: pinned HIS ↔ ERP scroll-morph (desktop) / click (mobile)
+     ================================================================== */
+  const pTrack = document.getElementById('products');
+  const gridHis = document.getElementById('gridHis');
+  const gridErp = document.getElementById('gridErp');
+  const hisCards = [...gridHis.children];
+  const erpCards = [...gridErp.children];
+  const descHis = document.getElementById('descHis');
+  const descErp = document.getElementById('descErp');
+  const ppill = document.getElementById('ppill');
+  const pbtns = [...document.querySelectorAll('#ptoggle button')];
+  const hisBtn = pbtns[0], erpBtn = pbtns[1];
+
+  const productsMod = register({
+    el: pTrack,
+    dx: 0,
+    measure() {
+      // pill sits over the HIS button; dx = physical delta to the ERP button (negative in RTL)
+      ppill.style.right = (hisBtn.parentElement.clientWidth - hisBtn.offsetLeft - hisBtn.offsetWidth - 5) + 'px';
+      ppill.style.width = hisBtn.offsetWidth + 'px';
+      this.dx = erpBtn.offsetLeft - hisBtn.offsetLeft;
+    },
+    setPhase(erp) {
+      if (this._erp === erp) return;
+      this._erp = erp;
+      gridErp.classList.toggle('off', !erp);
+      gridHis.classList.toggle('off', erp);
+      gridErp.setAttribute('aria-hidden', String(!erp));
+      gridHis.setAttribute('aria-hidden', String(erp));
+      hisBtn.classList.toggle('active', !erp);
+      erpBtn.classList.toggle('active', erp);
+    },
+    frame() {
+      if (REDUCED || S.mobile) return;
+      const p = pinP(this);
+      const m = eInOut(seg(p, .3, .7));
+      ppill.style.transform = `translateX(${this.dx * m}px)`;
+      hisCards.forEach((c, i) => {
+        const ci = eOutCubic(seg(m, i * .05, .5 + i * .05));
+        c.style.opacity = 1 - ci;
+        c.style.transform = `translateY(${-22 * ci}px)`;
+      });
+      erpCards.forEach((c, i) => {
+        const ei = eOutCubic(seg(m, .4 + i * .05, .9 + i * .05));
+        c.style.opacity = ei;
+        c.style.transform = `translateY(${24 * (1 - ei)}px)`;
+      });
+      descHis.style.opacity = 1 - m;
+      descErp.style.opacity = m;
+      this.setPhase(m > .5);
+    }
+  });
+  productsMod.setPhase(false);
+  pbtns.forEach(b => b.addEventListener('click', () => {
+    const erp = b.dataset.p === 'erp';
+    if (!S.mobile && !REDUCED) {
+      const target = productsMod.top + (erp ? .85 : .05) * (productsMod.trackH - S.vh);
+      scrollTo({ top: target, behavior: 'smooth' });
+    } else {
+      productsMod.setPhase(erp);
+      ppill.style.transform = `translateX(${(erp ? 1 : 0) * productsMod.dx}px)`;
+      descHis.style.opacity = erp ? 0 : 1;
+      descErp.style.opacity = erp ? 1 : 0;
+    }
+  }));
+
+  /* ==================================================================
+     Journey: pinned scrub — fill, patient token, cumulative steps
+     ================================================================== */
+  const jTrackEl = document.getElementById('journey');
+  const jfill = document.getElementById('jfill');
+  const jtoken = document.getElementById('jtoken');
+  const jtrack = document.getElementById('jtrack');
+  const steps = [...document.querySelectorAll('.step')];
+  const journeyMod = register({
+    el: jTrackEl,
+    trackW: 0,
+    measure() { this.trackW = jtrack ? jtrack.clientWidth : 0; },
+    setStep(k) {
+      if (this._k === k) return;
+      const up = this._k !== undefined && k > this._k;
+      this._k = k;
+      steps.forEach((s, i) => s.classList.toggle('active', i <= k));
+      if (up && k >= 0 && jtoken.animate && !REDUCED && !S.mobile) {
+        const base = jtoken.style.transform || 'translateX(0px)';
+        jtoken.animate(
+          [{ transform: base + ' scale(1)' }, { transform: base + ' scale(1.35)' }, { transform: base + ' scale(1)' }],
+          { duration: 320 });
+      }
+    },
+    frame() {
+      if (REDUCED) return;
+      if (S.mobile) {
+        const p = entryP(this, 1.2);
+        this.setStep(Math.min(3, Math.floor(p * 4)));
+        return;
+      }
+      const p = pinP(this);
+      const e = eInOut(seg(p, .06, .92));
+      jfill.style.transform = `scaleX(${e})`;
+      jtoken.style.transform = `translateX(${-e * this.trackW}px)`;
+      this.setStep(e <= 0.01 ? 0 : Math.min(3, Math.floor(e * 3 + .3)));
+    }
+  });
+  steps.forEach(s => {
+    const go = () => {
+      const i = +s.dataset.i;
+      if (!S.mobile && !REDUCED) {
+        const target = journeyMod.top + (.06 + (i / 3) * .86) * (journeyMod.trackH - S.vh);
+        scrollTo({ top: target, behavior: 'smooth' });
+      } else journeyMod.setStep(i);
+    };
+    s.addEventListener('click', go);
+    s.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+  if (REDUCED) { journeyMod.setStep(3); }
+
+  /* ==================================================================
+     Platform: ratcheted scrubbed counters + chart + rows
+     ================================================================== */
+  const chart = document.getElementById('chart');
+  const revs = [55, 62, 48, 70, 66, 78, 72, 85, 80, 90, 86, 96];
+  const exps = [38, 40, 35, 44, 41, 46, 43, 50, 47, 52, 49, 54];
+  chart.innerHTML = revs.map((r, i) =>
+    `<div class="bar"><i class="rev" style="height:${r}%"></i><i class="exp" style="height:${exps[i] * .6}%"></i></div>`).join('');
+  const barEls = [...chart.querySelectorAll('.bar i')];
+  const counts = [...document.querySelectorAll('.count')];
+  const appts = [...document.querySelectorAll('.appt')];
+  register({
+    el: document.getElementById('kpis'),
+    pMax: 0,
+    frame() {
+      if (REDUCED || this._done) return;
+      const p = entryP(this, .75);
+      this.pMax = Math.max(this.pMax, p);   // ratchet: numbers never rewind
+      const e = eOutCubic(this.pMax);
+      counts.forEach(c => {
+        const v = Math.round(+c.dataset.to * e);
+        if (c._v !== v) { c._v = v; c.textContent = fmt(v); }
+      });
+      barEls.forEach((b, i) => {
+        const wk = Math.floor(i / 2); // rev+exp pair share one stagger slot
+        b.style.transform = `scaleY(${eOutCubic(seg(this.pMax * 1.5, wk * .05, .5 + wk * .05))})`;
+      });
+      appts.forEach((a, i) => {
+        const ai = eOutCubic(seg(this.pMax, .2 + i * .12, .5 + i * .12));
+        a.style.opacity = ai;
+        a.style.transform = `translateX(${20 * (1 - ai)}px)`;
+      });
+      if (this.pMax >= 1) this._done = true;
+    }
+  });
+  if (REDUCED) counts.forEach(c => c.textContent = fmt(+c.dataset.to));
+
+  /* ==================================================================
+     Integrations: wires draw from the hub to each system
+     ================================================================== */
+  const iwrap = document.getElementById('iwrap');
+  const iwires = document.getElementById('iwires');
+  const ihub = document.getElementById('ihub');
+  const icards = [...document.querySelectorAll('#igrid .icard-sm')];
+  register({
+    el: document.getElementById('integrations'),
+    paths: [],
+    measure() {
+      this.paths = [];
+      iwires.innerHTML = '';
+      if (REDUCED || innerWidth < 1001) return;
+      const wr = iwrap.getBoundingClientRect();
+      iwires.setAttribute('viewBox', `0 0 ${Math.round(wr.width)} ${Math.round(wr.height)}`);
+      iwires.setAttribute('preserveAspectRatio', 'none');
+      const hr = ihub.getBoundingClientRect();
+      const hx = hr.left + hr.width / 2 - wr.left, hy = hr.bottom - wr.top;
+      icards.forEach(card => {
+        const ic = card.querySelector('.ic').getBoundingClientRect();
+        const cx = ic.left + ic.width / 2 - wr.left, cy = ic.top - wr.top;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${hx.toFixed(1)} ${hy.toFixed(1)} C ${hx.toFixed(1)} ${(hy + 46).toFixed(1)}, ${cx.toFixed(1)} ${(cy - 52).toFixed(1)}, ${cx.toFixed(1)} ${cy.toFixed(1)}`);
+        iwires.appendChild(path);
+        const len = path.getTotalLength();
+        path.style.strokeDasharray = len;
+        path.style.strokeDashoffset = len;
+        this.paths.push({ path, len, card, _live: false });
+      });
+    },
+    frame() {
+      if (!this.paths.length) return;
+      const p = entryP(this, .95);
+      this.paths.forEach((w, i) => {
+        const sub = seg(p, .15 + i * .08, .55 + i * .08);
+        w.path.style.strokeDashoffset = w.len * (1 - sub);
+        const live = sub >= 1;
+        if (live !== w._live) { w._live = live; w.card.classList.toggle('live', live); }
+      });
+    }
+  });
+
+  /* ==================================================================
+     Team: scroll-walked accordion (desktop) / click (mobile)
+     ================================================================== */
+  const teamTrack = document.getElementById('partnership');
+  const accItems = [...document.querySelectorAll('.acc-item')];
+  const accTicks = accItems.map(it => it.querySelector('.acc-tick i'));
+  function openAcc(idx) {
+    accItems.forEach((it, i) => {
+      const open = i === idx;
+      it.classList.toggle('open', open);
+      const body = it.querySelector('.acc-body');
+      body.style.maxHeight = open ? body.scrollHeight + 'px' : '0';
+    });
+  }
+  const teamMod = register({
+    el: teamTrack,
+    override: false,
+    frame() {
+      if (REDUCED || S.mobile) return;
+      const p = pinP(this);
+      if (this.override) {
+        if (S.y < this.top - S.vh * .5 || S.y > this.bottom) this.override = false;
+        return;
+      }
+      const k = Math.min(4, Math.floor(p * 5));
+      const local = clamp(p * 5 - k, 0, 1);
+      if (this._k !== k) { this._k = k; openAcc(k); }
+      accTicks.forEach((t, i) => t.style.transform = `scaleY(${i < k ? 1 : i === k ? local : 0})`);
+    }
+  });
+  accItems.forEach((it, i) => it.querySelector('.acc-head').addEventListener('click', () => {
+    if (!S.mobile && !REDUCED) teamMod.override = true;
+    const was = it.classList.contains('open');
+    openAcc(was ? -1 : i);
+  }));
+  openAcc(0);
+
+  /* ==================================================================
+     Methodology: reading-companion timeline
+     ================================================================== */
+  const tl = document.getElementById('tl');
+  const tlFill = document.getElementById('tlFill');
+  const tsteps = [...tl.querySelectorAll('.tstep')];
+  register({
+    el: tl,
+    fr: [.05, .3, .55, .8],
+    measure() {
+      const h = tl.clientHeight || 1;
+      this.fr = tsteps.map(t => (t.offsetTop + 10) / h);
+    },
+    frame() {
+      if (REDUCED) return;
+      const p = clamp((S.y + S.vh * .72 - this.top) / this.trackH, 0, 1);
+      tlFill.style.transform = `scaleY(${p})`;
+      tsteps.forEach((t, i) => {
+        const lit = p >= this.fr[i];
+        if (t._lit !== lit) { t._lit = lit; t.classList.toggle('lit', lit); }
+        const sub = eOutCubic(seg(p, this.fr[i] - .06, this.fr[i] + .1));
+        t.style.opacity = sub;
+        t.style.transform = `translateY(${18 * (1 - sub)}px)`;
+      });
+    }
+  });
+  if (REDUCED) tsteps.forEach(t => t.classList.add('lit'));
+
+  /* ==================================================================
+     Slogan: the thesis reassembles word by word
+     ================================================================== */
+  if (!REDUCED) {
+    const sloganLine = document.getElementById('sloganLine');
+    const sq = document.getElementById('sq');
+    // split by WORDS only — Arabic glyph shaping must never be broken per letter
+    const splitWords = node => {
+      [...node.childNodes].forEach(ch => {
+        if (ch.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(tok => {
+            if (tok === '') return;
+            if (/^\s+$/.test(tok)) frag.appendChild(document.createTextNode(tok));
+            else { const s = document.createElement('span'); s.className = 'w'; s.textContent = tok; frag.appendChild(s); }
+          });
+          node.replaceChild(frag, ch);
+        } else if (ch.nodeType === 1 && ch.tagName !== 'BR') splitWords(ch);
+      });
+    };
+    splitWords(sloganLine);
+    const words = [...sloganLine.querySelectorAll('.w')];
+    const SEED = [[-34, 18, -5], [26, -14, 4], [-18, -22, 3], [30, 16, -4], [-26, 12, 5], [20, -18, -3], [-30, 20, 4], [24, -12, -5]];
+    register({
+      el: document.getElementById('slogan'),
+      frame() {
+        const p = entryP(this, .85);
+        const N = words.length || 1;
+        words.forEach((w, i) => {
+          const o = seg(p, i / (N + 2), (i + 2.2) / (N + 2));
+          const e = eOutCubic(o);
+          const [dx, dy, r] = SEED[i % SEED.length];
+          w.style.opacity = .15 + .85 * o;
+          w.style.transform = `translate(${dx * (1 - e)}px, ${dy * (1 - e)}px) rotate(${r * (1 - e)}deg)`;
+        });
+        sq.style.transform = `translateY(${(1 - p) * 40}px)`;
+      }
+    });
+  }
+
+  /* ==================================================================
+     Velocity tilt: grids lean with scroll speed, settle on stop
+     ================================================================== */
+  if (!REDUCED) {
+    const tiltEls = [document.getElementById('kpis'), document.getElementById('agrid')].filter(Boolean);
+    register({
+      el: null,
+      frame() {
+        if (S.mobile) return;
+        const a = clamp(S.vy, -30, 30) * -.035;
+        tiltEls.forEach(el => el.style.transform = `perspective(900px) rotateX(${a}deg)`);
+      }
+    });
+  }
+
+  /* ---- boot ---- */
+  measureAll();
+  frame();
+  if (!REDUCED) loop();
+
+  // test hook: lets tooling drive frames without real scroll events
+  window.__gain = { S, frame, measureAll };
+})();
+</script>
+</body>
+</html>
