@@ -372,13 +372,10 @@
     position: relative; z-index: 2;
   }
   .ihub img { height: 20px; width: auto; }
-  .ihub-row { text-align: center; margin-top: 40px; }
-  .iwires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; display: none; }
-  @media (min-width: 1001px) { .iwires { display: block; } }
-  .iwires path { fill: none; stroke: var(--sky-light); stroke-width: 2; opacity: .55; }
-  .igrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 72px; position: relative; z-index: 2; }
-  @media (max-width: 1000px) { .igrid { grid-template-columns: repeat(2, 1fr); margin-top: 44px; } }
-  @media (max-width: 560px) { .igrid { grid-template-columns: 1fr; } }
+  .ihub-row { text-align: center; margin-top: 40px; margin-bottom: 8px; }
+  .igrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 30px; position: relative; z-index: 2; }
+  @media (max-width: 1000px) { .igrid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 640px) { .igrid { grid-template-columns: repeat(2, 1fr); } }
   .icard-sm { background: var(--bg-light); border: 1px solid var(--line); border-radius: 18px; padding: 24px 18px; text-align: center; transition: transform .35s, box-shadow .35s, border-color .45s; }
   .icard-sm:hover { transform: translateY(-8px); border-color: rgba(29,140,190,.4); box-shadow: 0 18px 40px rgba(26,44,92,.12); }
   .icard-sm.live { border-color: rgba(29,140,190,.5); box-shadow: 0 10px 28px rgba(29,140,190,.14); }
@@ -730,13 +727,17 @@
   <div class="wrap iwrap" id="iwrap">
     <span class="kicker rv"><i data-lucide="plug-zap" style="width:15px;height:15px"></i> شركاؤنا وتكاملاتنا</span>
     <h2 class="h2 rv" data-d="1">منصة مترابطة تربط أنظمتك بالأنظمة الوطنية</h2>
-    <p class="lead rv" data-d="2">قابلية ربط تقلّل الإدخال اليدوي وتحسّن انسيابية العمل — مرّر وشاهد غين تتصل بكل نظام.</p>
-    <div class="ihub-row rv" data-d="2"><span class="ihub" id="ihub"><img src="assets/gain-logo-navy.webp" alt="غين"> منصة غين</span></div>
-    <svg class="iwires" id="iwires" aria-hidden="true"></svg>
+    <p class="lead rv" data-d="2">قابلية ربط تقلّل الإدخال اليدوي وتحسّن انسيابية العمل، وفق جاهزية التكامل ومتطلبات المنشأة.</p>
+    <div class="ihub-row rv" data-d="2"><span class="ihub" id="ihub"><img src="assets/gain-logo-navy.webp" alt="غين"> منصة غين تتكامل مع</span></div>
     <div class="igrid" id="igrid">
-      <div class="icard-sm rv" data-d="1"><div class="ic"><img src="assets/zatca-logo.png" alt="زاتكا"></div><b>الفوترة الإلكترونية</b><small>ZATCA</small><p>دعم متطلبات الفوترة الإلكترونية النظامية.</p></div>
+      <div class="icard-sm rv" data-d="1"><div class="ic"><img src="assets/zatca-logo.png" alt="هيئة الزكاة والضريبة"></div><b>هيئة الزكاة والضريبة</b><small>ZATCA</small><p>الفوترة الإلكترونية وفق المتطلبات النظامية.</p></div>
       <div class="icard-sm rv" data-d="2"><div class="ic"><img src="assets/nphies-logo.png" alt="نفيس"></div><b>منصة نفيس</b><small>NPHIES</small><p>المطالبات والموافقات التأمينية.</p></div>
-      <div class="icard-sm rv" data-d="3"><div class="ic"><i data-lucide="credit-card"></i></div><b>بوابات الدفع</b><small>PAYMENTS</small><p>روابط ومدفوعات رقمية تسهّل التحصيل.</p></div>
+      <div class="icard-sm rv" data-d="3"><div class="ic"><img src="assets/moh.webp" alt="وزارة الصحة"></div><b>وزارة الصحة</b><small>MOH</small><p>الربط مع الأنظمة الصحية الوطنية.</p></div>
+      <div class="icard-sm rv" data-d="4"><div class="ic"><img src="assets/cbahi.webp" alt="سباهي"></div><b>سباهي</b><small>CBAHI</small><p>معايير اعتماد المنشآت الصحية.</p></div>
+      <div class="icard-sm rv" data-d="5"><div class="ic"><img src="assets/nafath.webp" alt="نفاذ"></div><b>نفاذ الوطني</b><small>NAFATH</small><p>الدخول الموحّد والتحقق من الهوية.</p></div>
+      <div class="icard-sm rv" data-d="1"><div class="ic"><img src="assets/maysar.webp" alt="ميسر"></div><b>ميسر</b><small>MAYSAR</small><p>مدفوعات رقمية وخيارات تقسيط.</p></div>
+      <div class="icard-sm rv" data-d="2"><div class="ic"><img src="assets/tamara.webp" alt="تمارا"></div><b>تمارا</b><small>TAMARA</small><p>الدفع الآجل والتقسيط للمرضى.</p></div>
+      <div class="icard-sm rv" data-d="3"><div class="ic"><img src="assets/tabby.webp" alt="تابي"></div><b>تابي</b><small>TABBY</small><p>التقسيط والدفع لاحقاً.</p></div>
       <div class="icard-sm rv" data-d="4"><div class="ic"><i data-lucide="message-circle"></i></div><b>قنوات التواصل</b><small>SMS · WHATSAPP</small><p>رسائل نصية وواتساب الأعمال للتنبيهات.</p></div>
       <div class="icard-sm rv" data-d="5"><div class="ic"><i data-lucide="network"></i></div><b>أنظمة خارجية</b><small>CRM · API</small><p>CRM ومراكز الاتصال وأدوات التقارير.</p></div>
     </div>
@@ -1213,44 +1214,17 @@
   if (REDUCED) counts.forEach(c => c.textContent = fmt(+c.dataset.to));
 
   /* ==================================================================
-     Integrations: wires draw from the hub to each system
+     Integrations: ignite each partner card as it scrolls into view
      ================================================================== */
-  const iwrap = document.getElementById('iwrap');
-  const iwires = document.getElementById('iwires');
-  const ihub = document.getElementById('ihub');
   const icards = [...document.querySelectorAll('#igrid .icard-sm')];
   register({
     el: document.getElementById('integrations'),
-    paths: [],
-    measure() {
-      this.paths = [];
-      iwires.innerHTML = '';
-      if (REDUCED || innerWidth < 1001) return;
-      const wr = iwrap.getBoundingClientRect();
-      iwires.setAttribute('viewBox', `0 0 ${Math.round(wr.width)} ${Math.round(wr.height)}`);
-      iwires.setAttribute('preserveAspectRatio', 'none');
-      const hr = ihub.getBoundingClientRect();
-      const hx = hr.left + hr.width / 2 - wr.left, hy = hr.bottom - wr.top;
-      icards.forEach(card => {
-        const ic = card.querySelector('.ic').getBoundingClientRect();
-        const cx = ic.left + ic.width / 2 - wr.left, cy = ic.top - wr.top;
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M ${hx.toFixed(1)} ${hy.toFixed(1)} C ${hx.toFixed(1)} ${(hy + 46).toFixed(1)}, ${cx.toFixed(1)} ${(cy - 52).toFixed(1)}, ${cx.toFixed(1)} ${cy.toFixed(1)}`);
-        iwires.appendChild(path);
-        const len = path.getTotalLength();
-        path.style.strokeDasharray = len;
-        path.style.strokeDashoffset = len;
-        this.paths.push({ path, len, card, _live: false });
-      });
-    },
     frame() {
-      if (!this.paths.length) return;
+      if (REDUCED) return;
       const p = entryP(this, .95);
-      this.paths.forEach((w, i) => {
-        const sub = seg(p, .15 + i * .08, .55 + i * .08);
-        w.path.style.strokeDashoffset = w.len * (1 - sub);
-        const live = sub >= 1;
-        if (live !== w._live) { w._live = live; w.card.classList.toggle('live', live); }
+      icards.forEach((card, i) => {
+        const live = p >= (i / icards.length) * .75 + .08;
+        if (live !== card._live) { card._live = live; card.classList.toggle('live', live); }
       });
     }
   });
