@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>لوحة عقود غين</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link href="assets/fonts.css" rel="stylesheet">
+<script src="assets/lucide.min.js"></script>
+<script src="assets/contract-link.js"></script>
+<script src="assets/admin/store.js"></script>
+<style>
+  :root {
+    --navy-deep: #1a2c5c; --navy: #20346a; --sky: #1d8cbe; --sky-light: #4dbfee; --sky-pale: #9bd9f5;
+    --ink: #1e293b; --ink-soft: #475569; --bg: #eef2f7; --line: #e2e8f0; --ok: #16a34a; --warn: #b45309;
+    --grad: linear-gradient(140deg, #1a2c5c 0%, #20346a 45%, #1d8cbe 135%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tajawal', system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.8; }
+  h1, h2, h3 { font-family: 'Cairo', sans-serif; font-weight: 800; }
+
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(11,20,48,.94); backdrop-filter: blur(12px); color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 22px; flex-wrap: wrap; }
+  .topbar .brand { display: flex; align-items: center; gap: 12px; }
+  .topbar .brand img { height: 26px; }
+  .topbar .brand b { font-family: 'Cairo', sans-serif; font-size: 15px; }
+  .nav { display: flex; gap: 6px; flex-wrap: wrap; }
+  .nav a { display: inline-flex; align-items: center; gap: 7px; color: rgba(255,255,255,.75); text-decoration: none;
+    font-size: 13.5px; font-weight: 700; padding: 8px 15px; border-radius: 10px; transition: background .2s, color .2s; }
+  .nav a svg { width: 15px; height: 15px; }
+  .nav a:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .nav a.active { background: linear-gradient(140deg, var(--sky), var(--sky-light)); color: #fff; box-shadow: 0 6px 16px rgba(29,140,190,.35); }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 700; font-size: 13.5px;
+    border-radius: 10px; padding: 9px 16px; cursor: pointer; border: 1px solid transparent; transition: transform .2s, background .2s; text-decoration: none; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn-primary { background: linear-gradient(140deg, var(--sky), var(--sky-light)); color: #fff; box-shadow: 0 8px 20px rgba(29,140,190,.35); }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-ghost { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.25); }
+  .btn-ghost:hover { background: rgba(255,255,255,.2); }
+  .btn-soft { background: #fff; color: var(--navy-deep); border-color: var(--line); }
+  .btn-soft:hover { border-color: var(--sky); }
+  .btn-danger { background: #fff; color: #b91c1c; border-color: #fecaca; }
+  .btn-danger:hover { background: #fef2f2; }
+
+  .wrap { max-width: 1080px; margin: 24px auto 80px; padding: 0 18px; }
+  .view { display: none; }
+  .view.active { display: grid; gap: 18px; align-content: start; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: 0 10px 34px rgba(26,44,92,.06); }
+  .card > h2 { font-size: 17px; color: var(--navy-deep); display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .card > h2 svg { width: 19px; height: 19px; stroke: var(--sky); }
+  .card .hint { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 14px; }
+
+  .fld { font-family: inherit; font-size: 14px; font-weight: 600; color: var(--navy-deep); background: #fff;
+    border: 1px solid #d7dee8; border-radius: 10px; padding: 9px 13px; transition: border-color .2s, box-shadow .2s; width: 100%; }
+  .fld:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(29,140,190,.14); }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 640px) { .grid3 { grid-template-columns: 1fr; } }
+  .frow label { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+
+  /* ===== stats (home) ===== */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+  .stat { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 10px 34px rgba(26,44,92,.06); }
+  .stat .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(29,140,190,.1); flex-shrink: 0; }
+  .stat .ic svg { width: 21px; height: 21px; stroke: var(--sky); }
+  .stat.amber .ic { background: #fef3c7; } .stat.amber .ic svg { stroke: var(--warn); }
+  .stat.slate .ic { background: var(--bg); } .stat.slate .ic svg { stroke: var(--ink-soft); }
+  .stat b { font-family: 'Cairo', sans-serif; font-size: 26px; color: var(--navy-deep); line-height: 1.2; display: block; }
+  .stat span { font-size: 12.5px; color: var(--ink-soft); font-weight: 700; }
+
+  /* ===== expiry alert strip ===== */
+  .alert-strip { background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; padding: 13px 18px; font-size: 13.5px; color: #92400e; display: flex; gap: 10px; align-items: flex-start; }
+  .alert-strip svg { width: 18px; height: 18px; stroke: var(--warn); flex-shrink: 0; margin-top: 3px; }
+  .alert-strip a { color: #92400e; font-weight: 700; }
+
+  /* ===== filters + table (home) ===== */
+  .list-tools { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 760px) { .list-tools { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .list-tools { grid-template-columns: 1fr; } }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: #9aa7b8; pointer-events: none; }
+  .search-wrap .fld { padding-inline-start: 36px; }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .tbl th { text-align: right; font-family: 'Cairo', sans-serif; font-size: 12px; color: var(--ink-soft); background: var(--bg); padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  .tbl th:first-child { border-start-start-radius: 10px; } .tbl th:last-child { border-start-end-radius: 10px; }
+  .tbl td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .tbl tbody tr { cursor: pointer; transition: background .15s; }
+  .tbl tbody tr:hover { background: #f7fafd; }
+  .tbl .cli-cell b { color: var(--navy-deep); }
+  .tbl .no-cell { font-family: Consolas, monospace; font-size: 11.5px; color: var(--ink-soft); direction: ltr; }
+  .tbl .lockic svg { width: 12px; height: 12px; stroke: var(--warn); }
+  .soon-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: var(--warn); background: #fef3c7; border-radius: 999px; padding: 1px 8px; margin-inline-start: 6px; }
+  .soon-chip svg { width: 11px; height: 11px; }
+
+  .st-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 3px 11px; white-space: nowrap; }
+  .st-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .st-draft   { background: var(--bg); color: var(--ink-soft); }
+  .st-review  { background: #fef3c7; color: var(--warn); }
+  .st-signed  { background: rgba(22,163,74,.14); color: #15803d; }
+  .st-expired { background: #fee2e2; color: #b91c1c; }
+
+  /* جدول ← بطاقات على الجوال */
+  @media (max-width: 640px) {
+    .tbl thead { display: none; }
+    .tbl, .tbl tbody, .tbl tr, .tbl td { display: block; width: 100%; }
+    .tbl tr { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; padding: 6px 4px; }
+    .tbl td { border: none; padding: 5px 12px; }
+    .tbl td[data-lbl]::before { content: attr(data-lbl) ': '; font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+  }
+
+  /* ===== empty state ===== */
+  .empty { text-align: center; padding: 46px 20px; }
+  .empty .ic { width: 68px; height: 68px; border-radius: 20px; background: rgba(29,140,190,.1); display: grid; place-items: center; margin: 0 auto 16px; }
+  .empty .ic svg { width: 32px; height: 32px; stroke: var(--sky); }
+  .empty h3 { font-size: 17px; color: var(--navy-deep); margin-bottom: 6px; }
+  .empty p { font-size: 13.5px; color: var(--ink-soft); max-width: 420px; margin: 0 auto 18px; }
+
+  /* ===== contract detail ===== */
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); text-decoration: none; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .back-link:hover { color: var(--sky); }
+  .back-link svg { width: 15px; height: 15px; }
+  .d-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .d-head h2 { font-size: 19px; color: var(--navy-deep); }
+  .d-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 22px; margin: 14px 0; }
+  @media (max-width: 640px) { .d-grid { grid-template-columns: 1fr; } }
+  .d-row { display: flex; flex-direction: column; gap: 3px; }
+  .d-row .k { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  .d-row .v { font-size: 14px; font-weight: 700; color: var(--navy-deep); }
+  .d-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .sig-thumb { max-height: 90px; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 6px 12px; }
+
+  /* ===== sections editor (settings) ===== */
+  .sec { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+  .sec-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; user-select: none; background: #fbfcfe; }
+  .sec-head:hover { background: #f4f8fb; }
+  .sec-head h3 { font-size: 13.5px; color: var(--navy-deep); flex: 1; font-weight: 700; font-family: 'Tajawal', sans-serif; }
+  .badge { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+  .badge.mod { background: #fef3c7; color: var(--warn); }
+  .badge.orig { background: var(--bg); color: var(--ink-soft); }
+  .sec-head .chev svg { width: 15px; height: 15px; stroke: var(--ink-soft); transition: transform .3s; }
+  .sec.open .chev svg { transform: rotate(180deg); }
+  .sec-body { display: none; border-top: 1px solid var(--line); }
+  .sec.open .sec-body { display: block; }
+  .sec-tools { display: flex; justify-content: flex-end; padding: 8px 12px 0; }
+  .editor { padding: 12px 16px 16px; font-size: 13.5px; outline: none; min-height: 60px; }
+  .editor:focus { background: #fcfeff; }
+  .editor h2 { font-size: 16px; color: var(--navy-deep); margin: 8px 0; }
+  .editor h3 { font-size: 14px; color: var(--navy); margin: 8px 0 4px; }
+  .editor h4 { font-size: 13px; color: var(--navy); margin: 6px 0 4px; }
+  .editor ol, .editor ul { margin: 4px 24px 4px 0; }
+  .editor table { border-collapse: collapse; font-size: 12.5px; }
+  .editor th, .editor td { border: 1px solid var(--line); padding: 5px 9px; }
+  .editor .n { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 7px; background: rgba(29,140,190,.1); color: var(--sky); font-size: 12px; margin-inline-end: 6px; }
+
+  /* ===== link output ===== */
+  .linkbox { display: none; margin-top: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .linkbox.show { display: block; }
+  .linkbox textarea { width: 100%; height: 74px; font-family: Consolas, monospace; font-size: 11px; direction: ltr; border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; background: #fff; color: var(--ink); }
+  .linkbox .meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .linkbox .len { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+  .linkbox .len.warn { color: var(--warn); }
+
+  /* ===== المعالج (عقد جديد) ===== */
+  .wz-steps { display: flex; margin: 6px 0 22px; }
+  .wz-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-align: center; }
+  .wz-step .dot { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); border: 2px solid var(--line); color: var(--ink-soft); font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 14px; transition: all .2s; position: relative; z-index: 1; }
+  .wz-step .dot svg { width: 16px; height: 16px; }
+  .wz-step.active .dot { background: linear-gradient(140deg, var(--sky), var(--sky-light)); border-color: transparent; color: #fff; box-shadow: 0 6px 16px rgba(29,140,190,.35); }
+  .wz-step.done .dot { background: rgba(22,163,74,.14); border-color: rgba(22,163,74,.4); color: #15803d; }
+  .wz-step.active { color: var(--navy-deep); }
+  .wz-step::before { content: ''; position: absolute; top: 17px; inset-inline-end: 50%; width: 100%; height: 2px; background: var(--line); }
+  .wz-step:first-child::before { display: none; }
+  .wz-pane { display: none; }
+  .wz-pane.active { display: block; }
+  .tpl-card { border: 2px solid var(--line); border-radius: 14px; padding: 18px; cursor: pointer; display: flex; gap: 14px; align-items: flex-start; transition: border-color .2s, background .2s; background: #fff; }
+  .tpl-card.selected { border-color: var(--sky); background: rgba(29,140,190,.04); }
+  .tpl-card .ic { width: 44px; height: 44px; border-radius: 12px; background: rgba(29,140,190,.1); display: grid; place-items: center; flex-shrink: 0; }
+  .tpl-card .ic svg { width: 21px; height: 21px; stroke: var(--sky); }
+  .tpl-card h3 { font-size: 15px; color: var(--navy-deep); margin-bottom: 2px; }
+  .tpl-card p { font-size: 12.5px; color: var(--ink-soft); }
+  .wz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .wz-grid { grid-template-columns: 1fr; } }
+  .fhelp { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; }
+  .ferr { font-size: 11.5px; color: #b91c1c; font-weight: 700; margin-top: 3px; display: none; }
+  .frow.invalid .ferr { display: block; }
+  .frow.invalid .fld { border-color: #fca5a5; }
+  .toggle-line { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--navy-deep); background: #fff; border: 1px solid #d7dee8; border-radius: 10px; padding: 9px 13px; cursor: pointer; }
+  .toggle-line input { width: 17px; height: 17px; accent-color: var(--sky); cursor: pointer; flex-shrink: 0; }
+  .wz-foot { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .preview-frame { width: 100%; height: 68vh; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  .success-box { text-align: center; padding: 6px 0 12px; }
+  .success-box .ic { width: 58px; height: 58px; border-radius: 50%; background: rgba(22,163,74,.12); display: grid; place-items: center; margin: 0 auto 10px; }
+  .success-box .ic svg { width: 27px; height: 27px; stroke: var(--ok); }
+  .success-box h3 { font-size: 16px; color: var(--navy-deep); margin-bottom: 4px; }
+  .success-box p { font-size: 13px; color: var(--ink-soft); }
+
+  .toast { position: fixed; bottom: 22px; right: 50%; transform: translateX(50%) translateY(90px); background: #0e1a3d; color: #fff;
+    border-radius: 999px; padding: 10px 22px; font-size: 13.5px; font-weight: 700; transition: transform .3s; z-index: 100; box-shadow: 0 14px 40px rgba(6,12,32,.4); max-width: 92vw; }
+  .toast.show { transform: translateX(50%) translateY(0); }
+  .toast.err { background: #991b1b; }
+  .note { font-size: 12px; color: var(--ink-soft); background: var(--bg); border-inline-start: 3px solid var(--sky-light); border-radius: 8px; padding: 9px 12px; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <img src="assets/gain-logo-white.webp" alt="غين">
+    <b>لوحة عقود غين</b>
+  </div>
+  <nav class="nav">
+    <a href="#/home" data-nav="home"><i data-lucide="layout-dashboard"></i> الرئيسية</a>
+    <a href="#/new" data-nav="new"><i data-lucide="file-plus-2"></i> عقد جديد</a>
+    <a href="#/settings" data-nav="settings"><i data-lucide="settings-2"></i> الإعدادات</a>
+  </nav>
+</div>
+
+<div class="wrap">
+
+  <!-- ================= الرئيسية ================= -->
+  <section class="view" id="view-home">
+    <div class="stats">
+      <div class="stat"><span class="ic"><i data-lucide="files"></i></span><div><b id="stTotal">0</b><span>إجمالي العقود</span></div></div>
+      <div class="stat amber"><span class="ic"><i data-lucide="alarm-clock"></i></span><div><b id="stSoon">0</b><span>تنتهي قريبًا (خلال 30 يومًا)</span></div></div>
+      <div class="stat slate"><span class="ic"><i data-lucide="file-pen"></i></span><div><b id="stDrafts">0</b><span>مسودات</span></div></div>
+    </div>
+
+    <div class="alert-strip" id="expiryAlert" hidden>
+      <i data-lucide="alarm-clock"></i>
+      <div id="expiryAlertTxt"></div>
+    </div>
+
+    <div class="card">
+      <h2><i data-lucide="files"></i> العقود</h2>
+      <div class="hint">كل عقودك في مكان واحد. اضغط على أي عقد لعرض تفاصيله وإجراءاته.</div>
+      <div class="list-tools" id="listTools">
+        <div class="search-wrap">
+          <i data-lucide="search"></i>
+          <input class="fld" id="fSearch" placeholder="ابحث باسم العميل أو رقم العقد…">
+        </div>
+        <select class="fld" id="fStatus">
+          <option value="">كل الحالات</option>
+          <option value="draft">مسودة</option>
+          <option value="review">قيد المراجعة</option>
+          <option value="signed">موقّع</option>
+          <option value="expired">منتهي</option>
+        </select>
+        <input class="fld" id="fFrom" type="date" title="من تاريخ الإنشاء">
+        <input class="fld" id="fTo" type="date" title="إلى تاريخ الإنشاء">
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" id="tbl">
+          <thead><tr><th>العميل</th><th>رقم العقد</th><th>الحالة</th><th>أُنشئ في</th><th>ينتهي في</th></tr></thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="emptyState" hidden>
+        <div class="ic"><i data-lucide="file-plus-2"></i></div>
+        <h3 id="emptyTitle">لا توجد عقود بعد</h3>
+        <p id="emptyTxt">أنشئ أول عقد لعميلك في دقائق: عبّئ البيانات، عاين العقد كما سيراه العميل، ثم أرسل له الرابط ليوقّعه.</p>
+        <a class="btn btn-primary" id="emptyCta" href="#/new"><i data-lucide="plus"></i> أنشئ أول عقد</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= عقد جديد (معالج خطوات) ================= -->
+  <section class="view" id="view-new">
+    <div class="card">
+      <h2><i data-lucide="file-plus-2"></i> عقد جديد</h2>
+      <div class="hint">تقدمك يُحفظ تلقائيًا كمسودة — يمكنك الخروج والعودة لإكماله في أي وقت من «الرئيسية».</div>
+
+      <div class="wz-steps">
+        <div class="wz-step" data-ws="1"><span class="dot">1</span><span>نوع العقد</span></div>
+        <div class="wz-step" data-ws="2"><span class="dot">2</span><span>بيانات العقد</span></div>
+        <div class="wz-step" data-ws="3"><span class="dot">3</span><span>المعاينة</span></div>
+        <div class="wz-step" data-ws="4"><span class="dot">4</span><span>الإرسال</span></div>
+      </div>
+
+      <!-- الخطوة 1: نوع العقد -->
+      <div class="wz-pane" data-wp="1">
+        <div class="tpl-card selected">
+          <span class="ic"><i data-lucide="stethoscope"></i></span>
+          <div>
+            <h3>عقد خدمات نظام غين</h3>
+            <p>عقد الاشتراك القياسي (21 بندًا + الملاحق): تشغيل منصة غين للعيادات، مع حاسبة الاشتراك والتوقيع الإلكتروني وتصدير PDF/Word.</p>
+          </div>
+        </div>
+        <div class="note">هذا هو القالب المعتمد حاليًا. البنية جاهزة لإضافة قوالب أخرى مستقبلًا (عدم إفصاح، عمل…).</div>
+      </div>
+
+      <!-- الخطوة 2: البيانات -->
+      <div class="wz-pane" data-wp="2">
+        <div class="wz-grid">
+          <div class="frow" id="fwName">
+            <label>اسم منشأة العميل *</label>
+            <input class="fld" id="wName" placeholder="مثال: عيادات أودنت لطب الأسنان">
+            <div class="fhelp">كما سيظهر في العقد وفي جدول المتابعة.</div>
+            <div class="ferr">اكتب اسم المنشأة — لا يمكن إنشاء العقد بدونه.</div>
+          </div>
+          <div class="frow" id="fwDate">
+            <label>تاريخ بدء العقد *</label>
+            <input class="fld" id="wDate" type="date">
+            <div class="fhelp">مدة العقد سنة، ويُحسب تاريخ الانتهاء تلقائيًا لتنبيهك قبل موعد التجديد.</div>
+            <div class="ferr">اختر تاريخ بدء العقد.</div>
+          </div>
+          <div class="frow" id="fwCR">
+            <label>الرقم الوطني الموحد (اختياري)</label>
+            <input class="fld" id="wCR" inputmode="numeric" placeholder="7XXXXXXXXX">
+            <div class="fhelp">10 أرقام يبدأ بـ7. اتركه فارغًا ليعبّئه العميل بنفسه.</div>
+            <div class="ferr">الرقم الموحد يتكون من 10 أرقام ويبدأ بـ7 — صحّحه أو اتركه فارغًا.</div>
+          </div>
+          <div class="frow">
+            <label>ممثل المنشأة (اختياري)</label>
+            <input class="fld" id="wRep" placeholder="اسم من سيوقّع العقد عن العميل">
+            <div class="fhelp">اتركه فارغًا ليعبّئه العميل بنفسه.</div>
+          </div>
+          <div class="frow" style="grid-column:1/-1">
+            <label>عنوان المنشأة (اختياري)</label>
+            <input class="fld" id="wAddr" placeholder="الشارع، الحي، المدينة">
+          </div>
+          <div class="frow">
+            <label>عدد الفروع</label>
+            <input class="fld" id="wBranches" type="number" min="1" max="999" value="1">
+            <div class="fhelp">لكل موقع تشغيل مستقل اشتراكه الخاص، ويمكن للعميل تعديله قبل التوقيع.</div>
+          </div>
+          <div class="frow">
+            <label>دورية الفوترة</label>
+            <select class="fld" id="wCycle">
+              <option value="1">شهري</option>
+              <option value="3">ربع سنوي</option>
+              <option value="6">نصف سنوي</option>
+              <option value="12">سنوي</option>
+            </select>
+          </div>
+          <div class="frow" style="grid-column:1/-1">
+            <label>تطبيق غين للموظفين (اختياري)</label>
+            <label class="toggle-line"><input type="checkbox" id="wApp"> إضافة «تطبيق غين» — نظام موارد بشرية متكامل على الجوال (يُحتسب في الحاسبة حسب الأسعار المعتمدة)</label>
+          </div>
+          <div class="frow">
+            <label>الخصم (اختياري)</label>
+            <select class="fld" id="wDiscType">
+              <option value="">بدون خصم</option>
+              <option value="pct">نسبة مئوية (%)</option>
+              <option value="fix">مبلغ ثابت (ر.س)</option>
+            </select>
+            <div class="fhelp">يُخصم من قيمة كل دورة فوترة، وتُحسب الضريبة على المبلغ بعد الخصم.</div>
+          </div>
+          <div class="frow" id="fwDiscVal" style="display:none">
+            <label id="wDiscValLbl">قيمة الخصم</label>
+            <input class="fld" id="wDiscVal" type="number" min="0" step="0.5" placeholder="0">
+            <div class="fhelp" id="wDiscValHelp"></div>
+            <div class="ferr" id="wDiscValErr">أدخل قيمة خصم صحيحة.</div>
+          </div>
+          <div class="frow" id="fwDiscWhy" style="grid-column:1/-1;display:none">
+            <label>سبب الخصم (اختياري — يظهر للعميل في ملخص الاشتراك)</label>
+            <input class="fld" id="wDiscWhy" placeholder="مثال: خصم عميل مميز، عرض إطلاق">
+          </div>
+          <div class="note" id="wDiscPreview" style="grid-column:1/-1;display:none"></div>
+        </div>
+      </div>
+
+      <!-- الخطوة 3: المعاينة -->
+      <div class="wz-pane" data-wp="3">
+        <div class="hint">هذه معاينة مطابقة تمامًا لما سيراه العميل عند فتح الرابط — بالأسعار والبنود المعتمدة في «الإعدادات» وبياناته معبّأة مسبقًا.</div>
+        <iframe id="wzPreview" class="preview-frame" title="معاينة العقد"></iframe>
+      </div>
+
+      <!-- الخطوة 4: الإرسال -->
+      <div class="wz-pane" data-wp="4">
+        <div class="wz-grid">
+          <div class="frow">
+            <label>كلمة مرور للعقد (اختياري)</label>
+            <input class="fld" id="wPw" autocomplete="off" placeholder="اتركه فارغًا لعقد بلا حماية">
+            <div class="fhelp">إن وضعتها فلن يُفتح العقد إلا بها. زوّد العميل بها في رسالة منفصلة، ولا يمكن استرجاعها من الرابط لاحقًا.</div>
+          </div>
+        </div>
+        <div id="wzResult"></div>
+        <div class="note">البيانات التي يعبّئها العميل وتوقيعه تبقى في متصفحه — بعد التوقيع يرسل لك «النسخة الموقّعة» وتستوردها من صفحة العقد في اللوحة.</div>
+      </div>
+
+      <div class="wz-foot">
+        <button class="btn btn-soft" id="wzBack"><i data-lucide="arrow-right"></i> السابق</button>
+        <button class="btn btn-primary" id="wzNext">التالي <i data-lucide="arrow-left"></i></button>
+        <button class="btn btn-primary" id="wzGen" style="display:none"><i data-lucide="link"></i> إنشاء العقد ونسخ الرابط</button>
+        <span style="flex:1"></span>
+        <button class="btn btn-soft" id="wzSaveExit"><i data-lucide="save"></i> حفظ كمسودة والخروج</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= تفاصيل عقد ================= -->
+  <section class="view" id="view-contract">
+    <div>
+      <a class="back-link" href="#/home"><i data-lucide="arrow-right"></i> رجوع إلى العقود</a>
+    </div>
+    <div class="card" id="detailCard"></div>
+  </section>
+
+  <!-- ================= الإعدادات ================= -->
+  <section class="view" id="view-settings">
+    <div class="card">
+      <h2><i data-lucide="banknote"></i> الأسعار</h2>
+      <div class="hint">تنعكس على حاسبة الاشتراك ونصوص المادة (5) وملفات PDF/Word المصدّرة لكل عقد جديد.</div>
+      <div class="grid3">
+        <div class="frow"><label>الاشتراك الأساسي (ر.س / فرع / شهر)</label><input class="fld" id="pxBase" type="number" min="0" step="1" value="2499"></div>
+        <div class="frow"><label>تطبيق غين (ر.س / فرع / شهر)</label><input class="fld" id="pxApp" type="number" min="0" step="1" value="500"></div>
+        <div class="frow"><label>ضريبة القيمة المضافة (%)</label><input class="fld" id="pxVat" type="number" min="0" max="100" step="0.5" value="15"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><i data-lucide="file-pen-line"></i> بنود العقد</h2>
+      <div class="hint">اضغط على أي بند لتحريره مباشرة. البنود غير المعروضة هنا (أطراف العقد، الحاسبة، الحساب البنكي، التوقيع) ثابتة لحماية الحقول التفاعلية.</div>
+      <div id="secList"><div class="hint">جارٍ تحميل البنود…</div></div>
+      <div class="d-actions">
+        <button class="btn btn-primary" id="saveBaseBtn"><i data-lucide="save"></i> حفظ كأساس لكل عقد جديد</button>
+        <button class="btn btn-danger" id="resetBtn"><i data-lucide="rotate-ccw"></i> إعادة الضبط للأصل</button>
+        <a class="btn btn-soft" href="contract.html" target="_blank" rel="noopener"><i data-lucide="external-link"></i> فتح العقد القياسي</a>
+      </div>
+      <div class="note">«حفظ كأساس» يجعل الأسعار والبنود الحالية نقطة البداية لكل عقد جديد تنشئه.</div>
+    </div>
+
+    <div class="card">
+      <h2><i data-lucide="database-backup"></i> النسخة الاحتياطية</h2>
+      <div class="hint">مهم: كل بيانات اللوحة (العقود والمسودات والتوقيعات والإعدادات) محفوظة في هذا المتصفح على هذا الجهاز فقط. نزّل نسخة احتياطية دوريًا حتى لا تفقدها عند مسح بيانات المتصفح أو تغيير الجهاز.</div>
+      <div class="d-actions" style="border-top:none;padding-top:0;margin-top:6px">
+        <button class="btn btn-primary" id="backupBtn"><i data-lucide="download"></i> تنزيل نسخة احتياطية</button>
+        <button class="btn btn-soft" id="restoreBtn"><i data-lucide="upload"></i> استعادة من ملف</button>
+        <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      </div>
+      <div class="note">الاستعادة تستبدل كل بيانات اللوحة الحالية بمحتوى الملف — استخدمها عند الانتقال لجهاز جديد أو بعد فقدان البيانات.</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  lucide.createIcons();
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const BASE_KEY = 'gain-admin-baseline';
+  const DEFAULT_PRICES = { base: 2499, app: 500, vat: 15 };
+  const EDITABLE = [
+    ['a2','المادة (2): التعريفات'], ['a3','المادة (3): موضوع العقد ونطاق الخدمة'], ['a4','المادة (4): مدة العقد والتجديد'],
+    ['a5text','المادة (5): البنود النصية (5.2 – 5.6)'],
+    ['a6','المادة (6): الاستضافة والنسخ الاحتياطي'], ['a7','المادة (7): التحديثات والصيانة'],
+    ['a8','المادة (8): التكاملات والرسوم'], ['a9','المادة (9): نقل البيانات'], ['a10','المادة (10): الدعم الفني وSLA'],
+    ['a11','المادة (11): التزامات العميل'], ['a12','المادة (12): التغيير في نطاق العمل'], ['a13','المادة (13): السرية وحماية البيانات'],
+    ['a14','المادة (14): قبول التسليم والتفعيل'], ['a15','المادة (15): حدود المسؤولية'], ['a16','المادة (16): الملكية الفكرية'],
+    ['a17','المادة (17): القوة القاهرة'], ['a18','المادة (18): الإنهاء'], ['a19','المادة (19): القانون والاختصاص'],
+    ['annexA','الملحق الفني (أ)'], ['sla','ملحق SLA'],
+  ];
+  const ORIGINAL = {};
+  const editors = {};
+  const Store = window.GainStore;
+  const { buildPayload, copyText } = window.GainLink;
+
+  const toast = (msg, isErr) => {
+    const t = $('#toast'); t.textContent = msg;
+    t.classList.toggle('err', !!isErr); t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), isErr ? 4000 : 2200);
+  };
+  const norm = s => s.replace(/\s+/g, ' ').trim();
+  const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmtDate = iso => iso ? new Date(iso.slice(0,10) + 'T00:00').toLocaleDateString('ar-SA-u-ca-gregory-nu-latn', { year:'numeric', month:'long', day:'numeric' }) : '—';
+  const STATUS_LABEL = { draft: 'مسودة', review: 'قيد المراجعة', signed: 'موقّع', expired: 'منتهي' };
+  const badgeHtml = st => `<span class="st-badge st-${st}">${STATUS_LABEL[st]}</span>`;
+
+  /* ================================================================
+     الموجّه (router) — #/home | #/new | #/contract/<id> | #/settings
+     ================================================================ */
+  let currentDetailId = null;
+  function route() {
+    const h = location.hash || '#/home';
+    const m = h.match(/^#\/(home|new|contract|settings)(?:\/([^/?&]+))?/);
+    const view = m ? m[1] : 'home';
+    const arg = m ? m[2] : null;
+    $$('.view').forEach(v => v.classList.remove('active'));
+    const el = $('#view-' + view);
+    (el || $('#view-home')).classList.add('active');
+    $$('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === view || (view === 'contract' && a.dataset.nav === 'home')));
+    if (view === 'home') renderHome();
+    if (view === 'contract') { currentDetailId = arg; renderDetail(arg); }
+    if (view === 'new') wzOpen(arg);
+    window.scrollTo({ top: 0 });
+  }
+  window.addEventListener('hashchange', route);
+
+  /* ================================================================
+     الرئيسية: إحصائيات + تنبيه + جدول
+     ================================================================ */
+  function filteredRows() {
+    const q = $('#fSearch').value.trim();
+    const st = $('#fStatus').value;
+    const from = $('#fFrom').value, to = $('#fTo').value;
+    return Store.list().filter(c => {
+      const eff = Store.effectiveStatus(c);
+      if (st && eff !== st) return false;
+      if (q && !((c.counterparty || '').includes(q) || (c.contractNo || '').includes(q))) return false;
+      const created = (c.createdAt || '').slice(0, 10);
+      if (from && created < from) return false;
+      if (to && created > to) return false;
+      return true;
+    });
+  }
+
+  function renderHome() {
+    const all = Store.list();
+    const soon = all.filter(Store.isExpiringSoon);
+    $('#stTotal').textContent = all.length;
+    $('#stSoon').textContent = soon.length;
+    $('#stDrafts').textContent = all.filter(c => Store.effectiveStatus(c) === 'draft').length;
+
+    const strip = $('#expiryAlert');
+    if (soon.length) {
+      strip.hidden = false;
+      $('#expiryAlertTxt').innerHTML = '<b>تنبيه:</b> ' +
+        soon.map(c => `<a href="#/contract/${c.id}">${escapeHtml(c.counterparty || 'عقد بدون اسم')}</a> (ينتهي في ${fmtDate(c.expiryDate)})`).join('، ') +
+        ' — تواصل مع العميل قبل موعد التجديد.';
+    } else strip.hidden = true;
+
+    const rows = filteredRows();
+    const body = $('#tblBody');
+    body.innerHTML = '';
+    const hasAny = all.length > 0;
+    $('#tbl').style.display = rows.length ? '' : 'none';
+    const empty = $('#emptyState');
+    if (!rows.length) {
+      empty.hidden = false;
+      if (hasAny) {
+        $('#emptyTitle').textContent = 'لا نتائج مطابقة';
+        $('#emptyTxt').textContent = 'لا يوجد عقد يطابق البحث أو الفلاتر الحالية. جرّب تعديل كلمة البحث أو اختيار «كل الحالات».';
+        $('#emptyCta').style.display = 'none';
+      } else {
+        $('#emptyTitle').textContent = 'لا توجد عقود بعد';
+        $('#emptyTxt').textContent = 'أنشئ أول عقد لعميلك في دقائق: عبّئ البيانات، عاين العقد كما سيراه العميل، ثم أرسل له الرابط ليوقّعه.';
+        $('#emptyCta').style.display = '';
+      }
+    } else {
+      empty.hidden = true;
+      rows.forEach(c => {
+        const eff = Store.effectiveStatus(c);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="cli-cell" data-lbl="العميل"><b>${escapeHtml(c.counterparty || 'عقد بدون اسم')}</b>${c.pw ? ' <span class="lockic" title="محمي بكلمة مرور"><i data-lucide="lock"></i></span>' : ''}${Store.isExpiringSoon(c) ? '<span class="soon-chip"><i data-lucide="alarm-clock"></i> ينتهي قريبًا</span>' : ''}</td>
+          <td class="no-cell" data-lbl="رقم العقد">${escapeHtml(c.contractNo || '—')}</td>
+          <td data-lbl="الحالة">${badgeHtml(eff)}</td>
+          <td data-lbl="أُنشئ في">${fmtDate(c.createdAt)}</td>
+          <td data-lbl="ينتهي في">${fmtDate(c.expiryDate)}</td>`;
+        tr.addEventListener('click', () => { location.hash = '#/contract/' + c.id; });
+        body.appendChild(tr);
+      });
+    }
+    lucide.createIcons();
+  }
+  ['fSearch','fStatus','fFrom','fTo'].forEach(id => {
+    $('#' + id).addEventListener('input', renderHome);
+  });
+
+  /* ================================================================
+     تفاصيل العقد
+     ================================================================ */
+  function renderDetail(id) {
+    const card = $('#detailCard');
+    const meta = id && Store.getMeta(id);
+    if (!meta) {
+      card.innerHTML = `<div class="empty"><div class="ic"><i data-lucide="file-question"></i></div>
+        <h3>العقد غير موجود</h3><p>ربما حُذف هذا العقد أو أن الرابط غير صحيح.</p>
+        <a class="btn btn-primary" href="#/home">العودة إلى العقود</a></div>`;
+      lucide.createIcons(); return;
+    }
+    const rec = Store.getRecord(id) || {};
+    const eff = Store.effectiveStatus(meta);
+    const sig = meta.hasSig ? Store.getSignature(id) : null;
+
+    card.innerHTML = `
+      <div class="d-head">
+        <div>
+          <h2>${escapeHtml(meta.counterparty || 'عقد بدون اسم')}</h2>
+          <div style="font-size:12.5px;color:var(--ink-soft)">عقد خدمات نظام غين${meta.pw ? ' · محمي بكلمة مرور' : ''}</div>
+        </div>
+        ${badgeHtml(eff)}
+      </div>
+
+      <div class="d-grid">
+        <div class="d-row"><span class="k">رقم العقد</span><span class="v">${escapeHtml(meta.contractNo || '—')}</span></div>
+        <div class="d-row"><span class="k">أُنشئ في</span><span class="v">${fmtDate(meta.createdAt)}</span></div>
+        ${rec.cfg && rec.cfg.disc ? `<div class="d-row"><span class="k">الخصم</span><span class="v" style="color:#15803d">${rec.cfg.disc.t === 'pct' ? escapeHtml(String(rec.cfg.disc.v)) + '%' : escapeHtml(Number(rec.cfg.disc.v).toLocaleString('en-US')) + ' ر.س'} لكل دورة${rec.cfg.disc.why ? ' — ' + escapeHtml(rec.cfg.disc.why) : ''}</span></div>` : ''}
+        <div class="d-row"><span class="k">تاريخ بدء العقد</span><input class="fld" type="date" id="dStart" value="${escapeHtml(meta.startDate || '')}"></div>
+        <div class="d-row"><span class="k">تاريخ انتهاء العقد <span style="font-weight:400">(يُحسب تلقائيًا: سنة من البدء)</span></span><input class="fld" type="date" id="dExpiry" value="${escapeHtml(meta.expiryDate || '')}"></div>
+      </div>
+
+      ${rec.url ? `
+      <div class="linkbox show">
+        <textarea readonly id="dUrl">${escapeHtml(rec.url)}</textarea>
+        <div class="meta">
+          <span class="len">هذا هو رابط العقد الذي يفتحه العميل${meta.pw ? ' (لا تنسَ تزويده بكلمة المرور)' : ''}.</span>
+          <span style="flex:1"></span>
+          <button class="btn btn-soft" id="dCopy"><i data-lucide="copy"></i> نسخ الرابط</button>
+          <a class="btn btn-soft" href="${escapeHtml(rec.url)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> فتح العقد</a>
+        </div>
+      </div>` : '<div class="note">لهذا العقد لا يوجد رابط بعد — أكمِله من «عقد جديد».</div>'}
+
+      ${rec.signed ? `<div class="d-grid" style="margin-top:2px">
+        <div class="d-row"><span class="k">وقّعه عن العميل</span><span class="v">${escapeHtml((rec.signed.fields && rec.signed.fields.cliSignName) || '—')}</span></div>
+        <div class="d-row"><span class="k">تاريخ استلام التوقيع</span><span class="v">${fmtDate(rec.signed.signedAt)}</span></div>
+      </div>` : ''}
+      ${sig ? `<div style="margin-top:8px"><div class="d-row"><span class="k">توقيع العميل المستلَم</span></div><img class="sig-thumb" src="${sig}" alt="توقيع العميل"></div>` : ''}
+
+      <div class="d-actions">
+        ${eff === 'draft' ? `<a class="btn btn-primary" href="#/new/${escapeHtml(id)}"><i data-lucide="pencil"></i> متابعة تعبئة المسودة</a>` : ''}
+        ${eff !== 'draft' && !rec.signed ? `<button class="btn btn-primary" id="dImport"><i data-lucide="file-up"></i> استيراد النسخة الموقّعة</button>` : ''}
+        ${rec.cfg ? `<button class="btn btn-soft" id="dDocx"><i data-lucide="file-text"></i> حفظ DOCX</button>` : ''}
+        ${eff !== 'signed' && eff !== 'draft' ? `<button class="btn btn-soft" id="dMarkSigned"><i data-lucide="badge-check"></i> تعليم كموقّع (يدويًا)</button>` : ''}
+        ${eff === 'signed' || meta.status === 'expired' ? `<button class="btn btn-soft" id="dMarkReview"><i data-lucide="rotate-ccw"></i> إعادة إلى «قيد المراجعة»</button>` : ''}
+        ${meta.status !== 'expired' ? `<button class="btn btn-soft" id="dMarkExpired"><i data-lucide="calendar-x"></i> إنهاء العقد يدويًا</button>` : ''}
+        <span style="flex:1"></span>
+        <button class="btn btn-danger" id="dDelete"><i data-lucide="trash-2"></i> حذف العقد</button>
+        <input type="file" id="dImportFile" accept=".json,application/json" hidden>
+      </div>
+      ${eff !== 'draft' && !rec.signed ? '<div class="note">بعد أن يوقّع العميل يضغط «تصدير النسخة الموقّعة» في صفحة العقد ويرسل لك الملف — استورده هنا لتصبح الحالة «موقّعًا» مع حفظ التوقيع.</div>' : ''}`;
+
+    /* التواريخ */
+    $('#dStart').addEventListener('change', () => {
+      const v = $('#dStart').value;
+      const patch = { id, startDate: v };
+      if (v && !$('#dExpiry').value) patch.expiryDate = Store.addMonths(v, 12);
+      const r = Store.upsert(Object.assign({}, meta, patch));
+      if (!r.ok) return toast(r.error, true);
+      toast('حُفظ تاريخ البدء' + (patch.expiryDate ? ' وحُسب تاريخ الانتهاء تلقائيًا' : ''));
+      renderDetail(id);
+    });
+    $('#dExpiry').addEventListener('change', () => {
+      const r = Store.upsert(Object.assign({}, meta, { id, expiryDate: $('#dExpiry').value }));
+      if (!r.ok) return toast(r.error, true);
+      toast('حُفظ تاريخ الانتهاء'); renderDetail(id);
+    });
+
+    /* الإجراءات */
+    const on = (sel, fn) => { const el = $(sel); if (el) el.addEventListener('click', fn); };
+    on('#dCopy', async () => { await copyText(rec.url); toast('نُسخ رابط العقد'); });
+    on('#dMarkSigned', () => {
+      if (!confirm('تأكيد: هل وقّع العميل هذا العقد فعلًا؟ ستتغير حالته إلى «موقّع».')) return;
+      const r = Store.upsert(Object.assign({}, meta, { id, status: 'signed' }));
+      if (!r.ok) return toast(r.error, true);
+      toast('أصبح العقد «موقّعًا» ✓'); renderDetail(id);
+    });
+    on('#dMarkReview', () => {
+      const r = Store.upsert(Object.assign({}, meta, { id, status: 'review' }));
+      if (!r.ok) return toast(r.error, true);
+      toast('أُعيد العقد إلى «قيد المراجعة»'); renderDetail(id);
+    });
+    on('#dMarkExpired', () => {
+      if (!confirm('سيُعلَّم هذا العقد «منتهيًا» يدويًا (مثلًا عند فسخه). متابعة؟')) return;
+      const r = Store.upsert(Object.assign({}, meta, { id, status: 'expired' }));
+      if (!r.ok) return toast(r.error, true);
+      toast('عُلّم العقد «منتهيًا»'); renderDetail(id);
+    });
+    on('#dDelete', () => {
+      if (!confirm('سيُحذف هذا العقد وسجلّه وتوقيعه نهائيًا من هذا المتصفح ولا يمكن التراجع. متابعة؟')) return;
+      Store.remove(id);
+      toast('حُذف العقد');
+      location.hash = '#/home';
+    });
+
+    /* حفظ DOCX: يُبنى العقد في إطار خفي بإعدادات هذا العقد المجمّدة (والبيانات الموقّعة إن استُوردت) */
+    on('#dDocx', async () => {
+      const btn = $('#dDocx');
+      const old = btn.innerHTML;
+      btn.disabled = true; btn.textContent = 'جارٍ إنشاء ملف Word…';
+      let iframe;
+      try {
+        const cfg = JSON.parse(JSON.stringify(rec.cfg));
+        if (rec.signed && rec.signed.fields) {
+          /* بيانات العميل كما وقّعها تدخل الملف */
+          cfg.fill = Object.assign({}, cfg.fill, rec.signed.fields);
+          if (rec.signed.fields.cliName) cfg.cli = rec.signed.fields.cliName;
+        }
+        const payload = await buildPayload(cfg, '');
+        iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;inset-inline-start:-11000px;top:0;width:1000px;height:900px;visibility:hidden';
+        iframe.src = 'contract.html#c=' + payload + '&preview=1';
+        document.body.appendChild(iframe);
+        await new Promise((res, rej) => {
+          iframe.onload = res;
+          iframe.onerror = () => rej(new Error('تعذر تحميل صفحة العقد'));
+          setTimeout(() => rej(new Error('انتهت مهلة تحميل العقد — أعد المحاولة')), 15000);
+        });
+        for (let i = 0; i < 100 && !iframe.contentWindow.__buildDocxBlob; i++) await new Promise(r => setTimeout(r, 100));
+        if (!iframe.contentWindow.__buildDocxBlob) throw new Error('لم يجهز مولد الملف — أعد المحاولة');
+        /* توقيع العميل المستورد يُرسم في لوحة التوقيع ليظهر في الملف */
+        const sigData = meta.hasSig ? Store.getSignature(id) : null;
+        if (sigData) {
+          const cv = iframe.contentDocument.getElementById('sigPad');
+          const ctx2 = cv.getContext('2d');
+          await new Promise(res => {
+            const img = new Image();
+            img.onload = () => { const r2 = cv.getBoundingClientRect(); ctx2.drawImage(img, 0, 0, r2.width, r2.height); res(); };
+            img.onerror = res;
+            img.src = sigData;
+          });
+          cv.dataset.ink = '1';
+        }
+        const blob = await iframe.contentWindow.__buildDocxBlob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'عقد غين — ' + (meta.counterparty || 'عقد') + '.docx';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        toast('نُزّل ملف Word ✓');
+      } catch (e) { toast('تعذر إنشاء ملف Word: ' + e.message, true); }
+      if (iframe) iframe.remove();
+      btn.disabled = false; btn.innerHTML = old; lucide.createIcons();
+    });
+
+    /* استيراد النسخة الموقّعة من ملف العميل */
+    on('#dImport', () => $('#dImportFile').click());
+    const fileInput = $('#dImportFile');
+    if (fileInput) fileInput.addEventListener('change', async () => {
+      const f = fileInput.files[0];
+      if (!f) return;
+      try {
+        const data = JSON.parse(await f.text());
+        if (data.kind !== 'gain-signed-contract') {
+          return toast('هذا ليس ملف نسخة موقّعة من عقد غين. اطلب من العميل الملف الذي نزّله بزر «تصدير النسخة الموقّعة».', true);
+        }
+        if (data.id && data.id !== id) {
+          return toast('هذا الملف يخص عقدًا آخر — افتح صفحة العقد الصحيح ثم استورده منها.', true);
+        }
+        if (!data.id && !confirm('هذا الملف لا يحمل معرّف عقد (أُنشئ من العقد القياسي بلا رابط مخصص). هل تريد ربطه بهذا العقد؟')) return;
+        if (data.sig) {
+          const rs = Store.setSignature(id, data.sig);
+          if (!rs.ok) return toast(rs.error, true);
+        }
+        const r = Store.upsert(
+          Object.assign({}, meta, {
+            id, status: 'signed', hasSig: !!data.sig,
+            contractNo: meta.contractNo || data.contractNo || '',
+            counterparty: meta.counterparty && meta.counterparty !== 'عقد بدون اسم' ? meta.counterparty : ((data.fields && data.fields.cliName) || meta.counterparty),
+          }),
+          Object.assign({}, rec, { signed: { fields: data.fields || {}, signedAt: data.signedAt || new Date().toISOString(), contractNo: data.contractNo || '' } }));
+        if (!r.ok) return toast(r.error, true);
+        toast('استُوردت النسخة الموقّعة — أصبح العقد «موقّعًا» ✓');
+        renderDetail(id);
+      } catch (e) {
+        toast('تعذر قراءة الملف — تأكد أنه ملف النسخة الموقّعة كما نزّله العميل دون تعديل.', true);
+      }
+      fileInput.value = '';
+    });
+    lucide.createIcons();
+  }
+
+  /* ================================================================
+     تحميل البنود الأصلية من contract.html (محرر البنود)
+     ================================================================ */
+  async function loadOriginal() {
+    const res = await fetch('contract.html', { cache: 'no-cache' });
+    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    EDITABLE.forEach(([key]) => {
+      const el = doc.querySelector(`[data-art="${key}"], [data-editable="${key}"]`);
+      ORIGINAL[key] = el ? el.innerHTML.trim() : '';
+    });
+  }
+
+  function baseline() { try { return JSON.parse(localStorage.getItem(BASE_KEY) || '{}'); } catch (e) { return {}; } }
+
+  function renderSections() {
+    const base = baseline();
+    const list = $('#secList');
+    list.innerHTML = '';
+    EDITABLE.forEach(([key, title]) => {
+      const secEl = document.createElement('div'); secEl.className = 'sec';
+      secEl.innerHTML = `
+        <div class="sec-head">
+          <h3>${title}</h3>
+          <span class="badge orig" data-badge>أصلي</span>
+          <span class="chev"><i data-lucide="chevron-down"></i></span>
+        </div>
+        <div class="sec-body">
+          <div class="sec-tools"><button class="btn btn-soft" data-restore style="font-size:11.5px;padding:5px 12px"><i data-lucide="undo-2"></i> استعادة الأصل</button></div>
+          <div class="editor" contenteditable="true" spellcheck="false"></div>
+        </div>`;
+      const editor = secEl.querySelector('.editor');
+      editor.innerHTML = (base.edits && base.edits[key]) || ORIGINAL[key];
+      editors[key] = { editor, badge: secEl.querySelector('[data-badge]') };
+      const syncBadge = () => {
+        const mod = norm(editor.innerHTML) !== norm(ORIGINAL[key]);
+        const b = editors[key].badge;
+        b.textContent = mod ? 'معدّل' : 'أصلي';
+        b.className = 'badge ' + (mod ? 'mod' : 'orig');
+      };
+      syncBadge(); editors[key].syncBadge = syncBadge;
+      editor.addEventListener('input', syncBadge);
+      secEl.querySelector('.sec-head').addEventListener('click', () => secEl.classList.toggle('open'));
+      secEl.querySelector('[data-restore]').addEventListener('click', e => {
+        e.stopPropagation();
+        editor.innerHTML = ORIGINAL[key]; syncBadge(); toast('استُعيد النص الأصلي');
+      });
+      list.appendChild(secEl);
+    });
+    lucide.createIcons();
+  }
+
+  function applyPrices(p) { $('#pxBase').value = p.base; $('#pxApp').value = p.app; $('#pxVat').value = p.vat; }
+  const readPrices = () => ({
+    base: Math.max(0, parseFloat($('#pxBase').value) || 0),
+    app: Math.max(0, parseFloat($('#pxApp').value) || 0),
+    vat: Math.max(0, parseFloat($('#pxVat').value) || 0),
+  });
+
+  /* ---------- الحالة الحالية → إعدادات عقد ---------- */
+  function currentEdits() {
+    const edits = {};
+    EDITABLE.forEach(([key]) => {
+      if (!editors[key]) return;
+      const html = editors[key].editor.innerHTML.trim();
+      if (norm(html) !== norm(ORIGINAL[key])) edits[key] = html;
+    });
+    return edits;
+  }
+  function currentConfig() {
+    const cfg = { v: 1 };
+    const p = readPrices();
+    if (p.base !== DEFAULT_PRICES.base || p.app !== DEFAULT_PRICES.app || p.vat !== DEFAULT_PRICES.vat) cfg.prices = p;
+    const edits = currentEdits();
+    if (Object.keys(edits).length) cfg.edits = edits;
+    return cfg;
+  }
+
+  /* ================================================================
+     معالج عقد جديد (4 خطوات) + المسودات
+     ================================================================ */
+  const WZ = { step: 1, id: null, dirty: false };
+  const WZ_DEFAULTS = () => ({ cliName: '', cliCR: '', cliAddr: '', cliRep: '', contractDate: Store.today(), branches: 1, appOpt: false, cycle: '1', discType: '', discVal: '', discWhy: '' });
+  let wzData = WZ_DEFAULTS();
+  const fmtNum = n => Number(n).toLocaleString('en-US');
+
+  /* نفس معادلة رقم العقد في contract.html حتى يتطابق الرقم في اللوحة والعقد */
+  function contractNoFor(name, d) {
+    if (!name || !d) return '';
+    const base = name + d;
+    let h = 0; for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) >>> 0;
+    return 'GAIN-' + d.replace(/-/g, '') + '-' + (h % 1000).toString().padStart(3, '0');
+  }
+
+  function wzReadForm() {
+    wzData = {
+      cliName: $('#wName').value.trim(), cliCR: $('#wCR').value.trim(),
+      cliAddr: $('#wAddr').value.trim(), cliRep: $('#wRep').value.trim(),
+      contractDate: $('#wDate').value,
+      branches: Math.min(999, Math.max(1, parseInt($('#wBranches').value, 10) || 1)),
+      appOpt: $('#wApp').checked, cycle: $('#wCycle').value,
+      discType: $('#wDiscType').value, discVal: $('#wDiscVal').value, discWhy: $('#wDiscWhy').value.trim(),
+    };
+  }
+  function wzWriteForm() {
+    $('#wName').value = wzData.cliName; $('#wCR').value = wzData.cliCR;
+    $('#wAddr').value = wzData.cliAddr; $('#wRep').value = wzData.cliRep;
+    $('#wDate').value = wzData.contractDate; $('#wBranches').value = wzData.branches;
+    $('#wApp').checked = wzData.appOpt; $('#wCycle').value = wzData.cycle;
+    $('#wDiscType').value = wzData.discType || ''; $('#wDiscVal').value = wzData.discVal || ''; $('#wDiscWhy').value = wzData.discWhy || '';
+    $$('#view-new .frow').forEach(f => f.classList.remove('invalid'));
+    wzDiscSync();
+  }
+
+  /* ---------- الخصم: حسابات ومعاينة فورية ---------- */
+  /* قيمة الدورة الأصلية (قبل الخصم والضريبة) وفق اختيارات المعالج والأسعار المعتمدة */
+  function wzCycleAmt() {
+    const p = readPrices();
+    const monthly = p.base * wzData.branches + (wzData.appOpt ? p.app * wzData.branches : 0);
+    return monthly * parseInt(wzData.cycle, 10);
+  }
+  /* الخصم الحالي إن كان صالحًا، وإلا null */
+  function wzDisc() {
+    if (!wzData.discType) return null;
+    const v = parseFloat(wzData.discVal);
+    if (!(v > 0)) return null;
+    if (wzData.discType === 'pct' && v > 100) return null;
+    if (wzData.discType === 'fix' && v > wzCycleAmt()) return null;
+    const d = { t: wzData.discType, v };
+    if (wzData.discWhy) d.why = wzData.discWhy;
+    return d;
+  }
+  function wzDiscSync() {
+    const t = $('#wDiscType').value;
+    $('#fwDiscVal').style.display = t ? '' : 'none';
+    $('#fwDiscWhy').style.display = t ? '' : 'none';
+    if (t === 'pct') {
+      $('#wDiscValLbl').textContent = 'نسبة الخصم (%)';
+      $('#wDiscValHelp').textContent = 'من 0.5 إلى 100 — تُطبق على قيمة كل دورة.';
+      $('#wDiscVal').max = 100;
+    } else if (t === 'fix') {
+      $('#wDiscValLbl').textContent = 'مبلغ الخصم (ر.س)';
+      $('#wDiscValHelp').textContent = 'يُخصم من قيمة كل دورة، ولا يتجاوز قيمتها الأصلية.';
+      $('#wDiscVal').removeAttribute('max');
+    }
+    /* المعاينة الفورية: الأصلي ← الخصم ← بعد الخصم ← الضريبة ← الإجمالي */
+    const box = $('#wDiscPreview');
+    const d = wzDisc();
+    if (!t || !d) { box.style.display = 'none'; return; }
+    const p = readPrices();
+    const cycleAmt = wzCycleAmt();
+    const discAmt = d.t === 'pct' ? cycleAmt * d.v / 100 : Math.min(d.v, cycleAmt);
+    const after = cycleAmt - discAmt;
+    const vat = after * p.vat / 100;
+    box.style.display = '';
+    box.innerHTML = `قيمة الدورة الأصلية: <b>${fmtNum(cycleAmt)} ر.س</b>
+      ← الخصم${d.t === 'pct' ? ` (${d.v}%)` : ''}: <b style="color:var(--ok)">−${fmtNum(Math.round(discAmt))} ر.س</b>
+      ← بعد الخصم: <b>${fmtNum(Math.round(after))} ر.س</b>
+      ← الضريبة (${p.vat}%): <b>${fmtNum(Math.round(vat))} ر.س</b>
+      ← الإجمالي المستحق: <b style="color:var(--navy-deep)">${fmtNum(Math.round(after + vat))} ر.س</b>`;
+  }
+
+  let wzSaveT = null;
+  function wzDraftSave(immediate) {
+    clearTimeout(wzSaveT);
+    const doSave = () => {
+      if (!WZ.id) WZ.id = window.GainLink.newId();
+      const r = Store.upsert({
+        id: WZ.id, tpl: 'services', status: 'draft',
+        counterparty: wzData.cliName || 'مسودة بدون اسم',
+        contractNo: contractNoFor(wzData.cliName, wzData.contractDate),
+        startDate: wzData.contractDate || '',
+        expiryDate: wzData.contractDate ? Store.addMonths(wzData.contractDate, 12) : '',
+        hasLink: false, pw: false, hasSig: false,
+      }, { wizard: { step: WZ.step, data: wzData } });
+      if (!r.ok) toast(r.error, true);
+    };
+    if (immediate) doSave(); else wzSaveT = setTimeout(doSave, 600);
+  }
+
+  function wzValidate2(show) {
+    let ok = true;
+    const check = (rowSel, bad) => {
+      if (show) $(rowSel).classList.toggle('invalid', !!bad);
+      if (bad) ok = false;
+    };
+    check('#fwName', !$('#wName').value.trim());
+    check('#fwDate', !$('#wDate').value);
+    const cr = $('#wCR').value.trim();
+    check('#fwCR', cr && !/^7\d{9}$/.test(cr));
+    /* الخصم: لا سالب، النسبة ≤ 100، والمبلغ الثابت ≤ قيمة الدورة الأصلية */
+    const dt = $('#wDiscType').value;
+    if (dt) {
+      const v = parseFloat($('#wDiscVal').value);
+      let bad = false, msg = '';
+      if (!(v > 0)) { bad = true; msg = 'أدخل قيمة خصم أكبر من صفر، أو اختر «بدون خصم».'; }
+      else if (dt === 'pct' && v > 100) { bad = true; msg = 'نسبة الخصم لا يمكن أن تتجاوز 100%.'; }
+      else if (dt === 'fix' && v > wzCycleAmt()) { bad = true; msg = `مبلغ الخصم يتجاوز قيمة الدورة الأصلية (${fmtNum(wzCycleAmt())} ر.س).`; }
+      if (msg) $('#wDiscValErr').textContent = msg;
+      check('#fwDiscVal', bad);
+    }
+    return ok;
+  }
+
+  function wzShow(step) {
+    WZ.step = step;
+    $$('.wz-pane').forEach(p => p.classList.toggle('active', +p.dataset.wp === step));
+    $$('.wz-step').forEach(s => {
+      const n = +s.dataset.ws;
+      s.classList.toggle('active', n === step);
+      s.classList.toggle('done', n < step);
+      const dot = s.querySelector('.dot');
+      if (n < step) dot.innerHTML = '<i data-lucide="check"></i>'; else dot.textContent = n;
+    });
+    $('#wzBack').style.visibility = step === 1 ? 'hidden' : 'visible';
+    $('#wzNext').style.display = step === 4 ? 'none' : '';
+    $('#wzGen').style.display = step === 4 ? '' : 'none';
+    if (step === 3) wzBuildPreview();
+    lucide.createIcons();
+  }
+
+  /* إعدادات هذا العقد: أساس الإعدادات + بيانات المعالج */
+  function wzConfig() {
+    const cfg = currentConfig();
+    if (!WZ.id) WZ.id = window.GainLink.newId();
+    cfg.id = WZ.id;
+    if (wzData.cliName) cfg.cli = wzData.cliName;
+    const fill = {};
+    if (wzData.cliCR) fill.cliCR = wzData.cliCR;
+    if (wzData.cliAddr) fill.cliAddr = wzData.cliAddr;
+    if (wzData.cliRep) fill.cliRep = wzData.cliRep;
+    if (wzData.contractDate) fill.contractDate = wzData.contractDate;
+    if (wzData.branches > 1) fill.branches = String(wzData.branches);
+    if (wzData.appOpt) fill.appOpt = true;
+    if (wzData.cycle !== '1') fill.cycle = wzData.cycle;
+    if (Object.keys(fill).length) cfg.fill = fill;
+    /* الخصم يُجمّد داخل إعدادات الرابط — لا يتأثر بتغيير الأسعار لاحقًا ولا يمكن للعميل تعديله */
+    const disc = wzDisc();
+    if (disc) cfg.disc = disc;
+    return cfg;
+  }
+
+  async function wzBuildPreview() {
+    wzReadForm();
+    const payload = await buildPayload(wzConfig(), ''); /* المعاينة دائمًا بلا كلمة مرور */
+    $('#wzPreview').src = 'contract.html#c=' + payload + '&preview=1';
+  }
+
+  function wzOpen(id) {
+    $('#wzResult').innerHTML = '';
+    $('#wPw').value = '';
+    $('#wzGen').disabled = false;
+    if (id) {
+      const meta = Store.getMeta(id);
+      const rec = Store.getRecord(id);
+      if (meta && Store.effectiveStatus(meta) === 'draft' && rec && rec.wizard) {
+        WZ.id = id; WZ.dirty = true;
+        wzData = Object.assign(WZ_DEFAULTS(), rec.wizard.data);
+        wzWriteForm();
+        wzShow(rec.wizard.step && rec.wizard.step > 1 ? rec.wizard.step : 2);
+        return;
+      }
+      location.hash = '#/new';
+      return;
+    }
+    WZ.id = null; WZ.dirty = false;
+    wzData = WZ_DEFAULTS();
+    wzWriteForm();
+    wzShow(1);
+  }
+
+  $('#wzNext').addEventListener('click', () => {
+    if (WZ.step === 2) {
+      wzReadForm();
+      if (!wzValidate2(true)) { toast('أكمل الحقول المطلوبة أولًا — التوضيح تحت كل حقل', true); return; }
+      wzDraftSave(true);
+    }
+    wzShow(Math.min(4, WZ.step + 1));
+  });
+  $('#wzBack').addEventListener('click', () => wzShow(Math.max(1, WZ.step - 1)));
+  $('#wzSaveExit').addEventListener('click', () => {
+    wzReadForm();
+    if (WZ.dirty || WZ.id) {
+      wzDraftSave(true);
+      toast('حُفظت المسودة ✓ ستجدها في «الرئيسية» لإكمالها لاحقًا');
+    }
+    location.hash = '#/home';
+  });
+  ['wName', 'wDate', 'wCR', 'wRep', 'wAddr', 'wBranches', 'wCycle', 'wApp', 'wDiscType', 'wDiscVal', 'wDiscWhy'].forEach(fid => {
+    const el = $('#' + fid);
+    const onEdit = () => {
+      const row = el.closest('.frow'); if (row) row.classList.remove('invalid');
+      wzReadForm(); WZ.dirty = true; wzDraftSave();
+      wzDiscSync();
+    };
+    el.addEventListener('input', onEdit);
+    el.addEventListener('change', onEdit);
+  });
+
+  $('#wzGen').addEventListener('click', async () => {
+    wzReadForm();
+    if (!wzValidate2(true)) { wzShow(2); toast('أكمل الحقول المطلوبة أولًا — اسم المنشأة وتاريخ البدء', true); return; }
+    const btn = $('#wzGen'); btn.disabled = true;
+    try {
+      const cfg = wzConfig();
+      const pw = $('#wPw').value;
+      const payload = await buildPayload(cfg, pw);
+      const url = new URL('contract.html', location.href).href + '#c=' + payload;
+      const r = Store.upsert({
+        id: cfg.id, tpl: 'services', status: 'review',
+        counterparty: wzData.cliName,
+        contractNo: contractNoFor(wzData.cliName, wzData.contractDate),
+        startDate: wzData.contractDate,
+        expiryDate: Store.addMonths(wzData.contractDate, 12),
+        hasLink: true, pw: !!pw, hasSig: false,
+      }, { url, cfg, pw: !!pw, wizard: null, statusLog: [{ to: 'review', at: new Date().toISOString() }] });
+      if (!r.ok) { toast(r.error, true); btn.disabled = false; return; }
+      const ok = await copyText(url);
+      const kb = (url.length / 1024).toFixed(1);
+      $('#wzResult').innerHTML = `
+        <div class="success-box">
+          <div class="ic"><i data-lucide="check"></i></div>
+          <h3>أُنشئ العقد بنجاح</h3>
+          <p>${ok ? 'الرابط منسوخ في الحافظة — أرسله للعميل ليعبّئ بياناته ويوقّع.' : 'انسخ الرابط أدناه وأرسله للعميل ليعبّئ بياناته ويوقّع.'}${pw ? ' لا تنسَ تزويده بكلمة المرور في رسالة منفصلة.' : ''}</p>
+        </div>
+        <div class="linkbox show">
+          <textarea readonly id="wzUrl">${escapeHtml(url)}</textarea>
+          <div class="meta">
+            <span class="len${url.length > 6000 ? ' warn' : ''}">طول الرابط: ${kb} KB${url.length > 6000 ? ' — طويل؛ قلّل تعديلات البنود إن أمكن' : ''}</span>
+            <span style="flex:1"></span>
+            <button class="btn btn-soft" id="wzCopy"><i data-lucide="copy"></i> نسخ</button>
+            <a class="btn btn-soft" href="${escapeHtml(url)}" target="_blank" rel="noopener"><i data-lucide="external-link"></i> فتح العقد</a>
+            <a class="btn btn-primary" href="#/contract/${escapeHtml(cfg.id)}"><i data-lucide="file-text"></i> صفحة العقد في اللوحة</a>
+          </div>
+        </div>`;
+      $('#wzCopy').addEventListener('click', async () => { await copyText(url); toast('نُسخ الرابط'); });
+      toast(ok ? 'أُنشئ العقد ونُسخ رابطه ✓' : 'أُنشئ العقد — انسخ الرابط يدويًا');
+      lucide.createIcons();
+      $('#wzResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) { toast('تعذر إنشاء العقد: ' + e.message, true); }
+    btn.disabled = false;
+  });
+
+  /* ================================================================
+     أزرار الإعدادات
+     ================================================================ */
+  $('#saveBaseBtn').addEventListener('click', () => {
+    const r = { ok: true };
+    try { localStorage.setItem(BASE_KEY, JSON.stringify({ prices: readPrices(), edits: currentEdits() })); }
+    catch (e) { r.ok = false; }
+    if (!r.ok) return toast(Store.QUOTA_MSG, true);
+    toast('حُفظت الأسعار والبنود الحالية كأساس لكل عقد جديد ✓');
+  });
+
+  $('#resetBtn').addEventListener('click', () => {
+    if (!confirm('سيُعاد كل شيء (الأسعار والبنود والأساس المحفوظ) إلى العقد الأصلي. متابعة؟')) return;
+    localStorage.removeItem(BASE_KEY);
+    applyPrices(DEFAULT_PRICES);
+    EDITABLE.forEach(([key]) => { if (editors[key]) { editors[key].editor.innerHTML = ORIGINAL[key]; editors[key].syncBadge(); } });
+    toast('أُعيد الضبط إلى العقد الأصلي');
+  });
+
+  /* ================================================================
+     النسخة الاحتياطية (تصدير/استيراد كل بيانات اللوحة)
+     ================================================================ */
+  const BACKUP_PREFIXES = ['gain-dash-', 'gain-admin-'];
+  $('#backupBtn').addEventListener('click', () => {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (BACKUP_PREFIXES.some(p => k.startsWith(p))) data[k] = localStorage.getItem(k);
+    }
+    const payload = { kind: 'gain-dashboard-backup', v: 1, at: new Date().toISOString(), data };
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'نسخة احتياطية — لوحة عقود غين — ' + Store.today() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast('نُزّلت النسخة الاحتياطية ✓ احفظها في مكان آمن');
+  });
+  $('#restoreBtn').addEventListener('click', () => $('#restoreFile').click());
+  $('#restoreFile').addEventListener('change', async () => {
+    const f = $('#restoreFile').files[0];
+    if (!f) return;
+    try {
+      const payload = JSON.parse(await f.text());
+      if (payload.kind !== 'gain-dashboard-backup' || !payload.data) {
+        return toast('هذا ليس ملف نسخة احتياطية من لوحة عقود غين.', true);
+      }
+      const n = Object.keys(payload.data).length;
+      if (!confirm(`سيتم استبدال كل بيانات اللوحة الحالية بمحتوى الملف (${n} عنصرًا، بتاريخ ${payload.at ? payload.at.slice(0, 10) : 'غير معروف'}). متابعة؟`)) return;
+      /* احذف مفاتيح اللوحة الحالية ثم اكتب المستعادة */
+      const toDelete = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (BACKUP_PREFIXES.some(p => k.startsWith(p))) toDelete.push(k);
+      }
+      toDelete.forEach(k => localStorage.removeItem(k));
+      for (const [k, v] of Object.entries(payload.data)) {
+        try { localStorage.setItem(k, v); }
+        catch (e) { return toast(Store.QUOTA_MSG, true); }
+      }
+      toast('استُعيدت النسخة الاحتياطية ✓');
+      location.hash = '#/home';
+      location.reload();
+    } catch (e) {
+      toast('تعذر قراءة الملف — تأكد أنه ملف النسخة الاحتياطية دون تعديل.', true);
+    }
+    $('#restoreFile').value = '';
+  });
+
+  /* ================================================================
+     إقلاع
+     ================================================================ */
+  (async () => {
+    /* ترحيل روابط النسخة السابقة إلى جدول العقود (غير هدّام) */
+    const mig = Store.migrate();
+    if (mig.migrated) toast(`تم نقل ${mig.migrated} من روابطك السابقة إلى جدول العقود`);
+
+    route();
+    await loadOriginal();
+    const base = baseline();
+    applyPrices(Object.assign({}, DEFAULT_PRICES, base.prices || {}));
+    renderSections();
+  })();
+})();
+</script>
+</body>
+</html>
