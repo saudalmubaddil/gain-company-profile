@@ -5,8 +5,17 @@
 <title>عقد إلكتروني — نظام GAIN لإدارة وتشغيل العيادات</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<link rel="preload" href="assets/fonts/cairo-400-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/cairo-700-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/cairo-800-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/cairo-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tajawal-400-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tajawal-500-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tajawal-700-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/tajawal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link href="assets/fonts.css" rel="stylesheet">
 <script src="assets/lucide.min.js"></script>
+<script src="assets/contract-link.js"></script>
 <style>
   :root {
     --navy-deep: #1a2c5c; --navy: #20346a; --sky: #1d8cbe; --sky-light: #4dbfee; --sky-pale: #9bd9f5;
@@ -28,7 +37,7 @@
   .topbar .brand { display: flex; align-items: center; gap: 12px; }
   .topbar .brand img { height: 26px; }
   .topbar .brand span { font-size: 13px; font-weight: 700; color: var(--sky-pale); }
-  .topbar .acts { display: flex; gap: 10px; flex-wrap: wrap; }
+  .topbar .acts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .btn { display: inline-flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 700; font-size: 13.5px;
     border-radius: 10px; padding: 9px 16px; cursor: pointer; border: 1px solid transparent; transition: transform .2s, background .2s, box-shadow .2s; }
   .btn svg { width: 16px; height: 16px; }
@@ -56,7 +65,6 @@
   .doc-body { padding: 20px 44px 44px; }
   @media (max-width: 620px) { .doc-head { padding: 30px 22px; } .doc-body { padding: 16px 22px 30px; } }
 
-  /* progress of filling */
   .fillbar { position: sticky; top: 58px; z-index: 40; height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; margin: 0 0 8px; }
   .fillbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--sky-light), var(--sky)); transition: width .3s; }
 
@@ -69,10 +77,11 @@
   .art p { font-size: 14.5px; color: var(--ink); margin: 8px 0; }
   .art ul, .art ol { margin: 8px 28px 8px 0; }
   .art li { font-size: 14.5px; margin: 6px 0; }
+  .art ol.alpha { list-style: upper-alpha; }
   .art .muted { color: var(--ink-soft); font-size: 13.5px; }
   .lead-note { background: var(--bg); border-inline-start: 3px solid var(--sky); border-radius: 10px; padding: 12px 16px; font-size: 13.5px; color: var(--ink-soft); margin: 10px 0; }
 
-  /* inline fillable fields */
+  /* fields */
   .fld { font-family: inherit; font-size: 14px; font-weight: 600; color: var(--navy-deep); background: #fff;
     border: 1px solid #d7dee8; border-radius: 10px; padding: 9px 13px; min-width: 120px;
     transition: border-color .2s, box-shadow .2s, background .2s; }
@@ -82,7 +91,6 @@
   .fld[readonly] { background: #f1f5f9; color: var(--ink-soft); cursor: default; }
   .fld[readonly]:hover { border-color: #d7dee8; }
   .fld[readonly]:focus { border-color: #d7dee8; box-shadow: none; }
-  .fld.wide { min-width: 220px; }
   .fld.full { display: block; width: 100%; margin-top: 4px; }
   select.fld { cursor: pointer; }
   .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 14px; }
@@ -90,7 +98,7 @@
   .party { border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: var(--bg); }
   .party.provider { background: linear-gradient(160deg, rgba(29,140,190,.08), rgba(29,140,190,.02)); }
   .party h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 14.5px; }
-  .party h4 .tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
   .tag.prov { background: rgba(29,140,190,.15); color: var(--sky); }
   .tag.cli { background: rgba(22,163,74,.14); color: var(--ok); }
   .field-row { margin: 10px 0; }
@@ -113,6 +121,9 @@
   .sum-row:last-child { border-bottom: none; }
   .sum-row .lbl { color: var(--ink-soft); }
   .sum-row .val { font-family: 'Cairo', sans-serif; font-weight: 700; color: var(--navy-deep); font-variant-numeric: tabular-nums; }
+  .sum-row.disc .lbl, .sum-row.disc .val { color: var(--ok); }
+  .sum-row.disc .lbl { font-weight: 700; }
+  .sum-row.disc-reason .val { font-weight: 600; font-size: 12.5px; color: var(--ok); }
   .sum-total { margin-top: 8px; background: var(--grad); color: #fff; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
   .sum-total .lbl { font-weight: 700; font-size: 14px; }
   .sum-total .val { font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; }
@@ -125,20 +136,23 @@
   .bank { background: var(--bg); border-radius: 12px; padding: 16px 18px; margin-top: 10px; font-size: 14px; }
   .bank div { margin: 5px 0; }
   .bank b { color: var(--navy-deep); }
+  .ltr { direction: ltr; unicode-bidi: embed; display: inline-block; }
 
   /* signatures */
   .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 14px; }
   @media (max-width: 620px) { .sign-grid { grid-template-columns: 1fr; } }
   .sign-box { border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: var(--bg); }
   .sign-box h4 { margin-bottom: 12px; }
+  .sign-line { margin: 10px 0; font-size: 14px; }
+  .sign-line span.k { color: var(--ink-soft); }
+  .sig-slot { height: 130px; margin-top: 8px; border-radius: 10px; display: grid; place-items: center; background: #fff; border: 1px solid var(--line); }
+  .sig-slot img { max-height: 104px; max-width: 88%; object-fit: contain; }
+  .signed-chip { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--ok); background: rgba(22,163,74,.1); border: 1px solid rgba(22,163,74,.28); border-radius: 999px; padding: 5px 12px; }
+  .signed-chip svg { width: 13px; height: 13px; }
   .sign-pad-wrap { position: relative; margin-top: 8px; }
-  .sign-pad { width: 100%; height: 150px; background: #fff; border: 1px dashed var(--sky); border-radius: 10px; touch-action: none; cursor: crosshair; display: block; }
+  .sign-pad { width: 100%; height: 130px; background: #fff; border: 1px dashed var(--sky); border-radius: 10px; touch-action: none; cursor: crosshair; display: block; }
   .sign-pad-hint { position: absolute; inset: 0; display: grid; place-items: center; color: #94a3b8; font-size: 13px; pointer-events: none; }
-  .sign-clear { margin-top: 8px; font-size: 12px; }
-  .sign-static { font-size: 14px; }
-  .sign-static .line { margin: 12px 0; }
-  .sign-static .line span { color: var(--ink-soft); }
-  .sign-static .draw { height: 60px; border-bottom: 1px solid var(--line); }
+  .sign-clear { margin-top: 8px; font-size: 12px; color: var(--ink-soft); border-color: var(--line); background: #fff; }
 
   .agree { display: flex; align-items: flex-start; gap: 12px; margin: 20px 0 6px; background: rgba(22,163,74,.06); border: 1px solid rgba(22,163,74,.25); border-radius: 12px; padding: 16px; }
   .agree input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--ok); flex-shrink: 0; cursor: pointer; }
@@ -148,8 +162,25 @@
   .doc-footer { text-align: center; padding: 20px; font-size: 12.5px; color: var(--ink-soft); border-top: 1px solid var(--line); }
   .doc-footer a { color: var(--sky); text-decoration: none; }
 
+  /* ===== password lock screen ===== */
+  .lock { position: fixed; inset: 0; z-index: 200; display: none; place-items: center; background: var(--grad); padding: 20px; }
+  .lock.show { display: grid; }
+  .lock-card { background: #fff; border-radius: 20px; padding: 36px 32px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 30px 80px rgba(6,12,32,.45); }
+  .lock-card img { height: 40px; margin-bottom: 20px; }
+  .lock-card h3 { font-size: 19px; color: var(--navy-deep); margin-bottom: 8px; }
+  .lock-card p { font-size: 13.5px; color: var(--ink-soft); margin-bottom: 20px; }
+  .lock-card .fld { width: 100%; text-align: center; font-size: 16px; letter-spacing: .15em; }
+  .lock-card .btn { width: 100%; justify-content: center; margin-top: 14px; }
+  .lock-err { min-height: 20px; margin-top: 10px; font-size: 13px; font-weight: 700; color: #b91c1c; }
+
+  /* ===== وضع المعاينة (داخل معالج اللوحة) ===== */
+  body.preview .topbar, body.preview .foot-note { display: none; }
+  body.preview .fillbar { top: 0; }
+  body.preview .sheet { margin-top: 14px; }
+
   /* ===== print ===== */
   @media print {
+    .lock { display: none !important; }
     @page { size: A4; margin: 14mm; }
     body { background: #fff; }
     .topbar, .fillbar, .stepper button, .sign-clear, .foot-note { display: none !important; }
@@ -158,15 +189,24 @@
     .doc-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0; }
     .art { break-inside: avoid; }
     .fld { background: transparent !important; border: none; border-bottom: 1px solid #333; border-radius: 0; box-shadow: none; color: #000; }
-    .stepper { border: none; }
-    .stepper input { border: none; }
-    .toggle { border: none; background: transparent; }
-    .calc, .party, .sign-box, .bank, .calc-controls, .calc .summary { background: #fff !important; }
-    .sum-total { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .stepper, .stepper input, .toggle { border: none; background: transparent; }
+    .calc, .party, .sign-box, .bank, .calc-controls, .calc .summary, .sig-slot { background: #fff !important; }
+    .sum-total, .signed-chip { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 </head>
 <body>
+
+<div id="lock" class="lock">
+  <div class="lock-card">
+    <img src="assets/gain-logo-navy.webp" alt="غين">
+    <h3>هذا العقد محمي بكلمة مرور</h3>
+    <p>أدخل كلمة المرور التي زوّدك بها فريق غين لفتح العقد.</p>
+    <input type="password" id="lockPw" class="fld" autocomplete="off" placeholder="كلمة المرور">
+    <button class="btn btn-primary" id="lockBtn">فتح العقد</button>
+    <div class="lock-err" id="lockErr"></div>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="brand">
@@ -176,7 +216,8 @@
   <div class="acts">
     <span class="save-note" id="saveNote"><i data-lucide="check"></i> حُفظت بياناتك</span>
     <button class="btn btn-ghost" id="clearBtn"><i data-lucide="eraser"></i> تفريغ الحقول</button>
-    <button class="btn btn-primary" id="printBtn"><i data-lucide="printer"></i> طباعة / حفظ PDF</button>
+    <button class="btn btn-ghost" id="exportBtn" disabled title="يتفعّل بعد الموافقة على البنود والتوقيع"><i data-lucide="send"></i> تصدير النسخة الموقّعة</button>
+    <button class="btn btn-primary" id="printBtn"><i data-lucide="printer"></i> حفظ PDF</button>
   </div>
 </div>
 
@@ -196,36 +237,35 @@
 
     <div class="doc-body">
 
-      <!-- المادة 1 -->
-      <section class="art">
+      <!-- 1 -->
+      <section class="art" data-art="a1">
         <h2><span class="n">1</span> أطراف العقد</h2>
         <p>تم إبرام هذا العقد بتاريخ
-          <input class="fld" type="date" id="contractDate" data-k="contractDate">
+          <input class="fld" type="date" data-k="contractDate">
           بين كلٍّ من:</p>
 
         <div class="party-grid">
           <div class="party provider">
             <h4>الطرف الأول <span class="tag prov">المزود</span></h4>
-            <div class="field-row"><label>الاسم</label><input class="fld full" data-k="provName" value="غين لتقنية المعلومات" readonly></div>
-            <div class="field-row"><label>سجل / رقم المنشأة</label><input class="fld full" data-k="provCR" placeholder="__________"></div>
-            <div class="field-row"><label>العنوان</label><input class="fld full" data-k="provAddr" placeholder="__________"></div>
-            <div class="field-row"><label>يمثلها</label><input class="fld full" data-k="provRep" placeholder="اسم الممثل"></div>
-            <div class="field-row"><label>بصفته</label><input class="fld full" data-k="provTitle" value="الرئيس التنفيذي"></div>
+            <div class="field-row"><label>الاسم</label><input class="fld full" data-k="provName" value="شركة غين لتقنية المعلومات" readonly></div>
+            <div class="field-row"><label>الرقم الوطني الموحد</label><input class="fld full" data-k="provCR" value="7025868212" readonly></div>
+            <div class="field-row"><label>العنوان</label><input class="fld full" data-k="provAddr" value="أبي معاذ الأنصاري، حي الربيع" readonly></div>
+            <div class="field-row"><label>يمثلها</label><input class="fld full" data-k="provRep" value="محمد بن علي الضويلع" readonly></div>
           </div>
           <div class="party">
             <h4>الطرف الثاني <span class="tag cli">العميل</span></h4>
-            <div class="field-row"><label>اسم المنشأة / العميل</label><input class="fld full" data-k="cliName" placeholder="اسم عيادتك أو منشأتك"></div>
-            <div class="field-row"><label>سجل / رقم الترخيص</label><input class="fld full" data-k="cliCR" placeholder="__________"></div>
-            <div class="field-row"><label>العنوان</label><input class="fld full" data-k="cliAddr" placeholder="__________"></div>
+            <div class="field-row"><label>اسم المنشأة</label><input class="fld full" data-k="cliName" placeholder="اسم عيادتك أو مجمعك الطبي"></div>
+            <div class="field-row"><label>الرقم الوطني الموحد</label><input class="fld full" data-k="cliCR" placeholder="7XXXXXXXXX"></div>
+            <div class="field-row"><label>العنوان</label><input class="fld full" data-k="cliAddr" placeholder="الشارع، الحي، المدينة"></div>
             <div class="field-row"><label>يمثلها</label><input class="fld full" data-k="cliRep" placeholder="اسم الممثل"></div>
-            <div class="field-row"><label>بصفته</label><input class="fld full" data-k="cliTitle" placeholder="المنصب"></div>
           </div>
         </div>
         <p class="muted" style="margin-top:12px">ويُشار إلى الطرفين مجتمعين بـ «الطرفين».</p>
+        <p>ويقر الطرفان بأن هذا العقد وملاحقه يمثلان كامل الاتفاق بينهما، وأن تنفيذهما يكون وفق مبادئ حسن النية والتعاون بما يحقق المصلحة المشتركة، دون الإخلال بحقوق والتزامات كل طرف الواردة فيهما.</p>
       </section>
 
-      <!-- المادة 2 -->
-      <section class="art">
+      <!-- 2 -->
+      <section class="art" data-art="a2">
         <h2><span class="n">2</span> التعريفات</h2>
         <ul>
           <li><b>الفرع:</b> موقع تشغيل مستقل للعميل ضمن النظام.</li>
@@ -234,34 +274,41 @@
           <li><b>SLA:</b> اتفاقية مستوى الخدمة الموضحة في ملحق (SLA).</li>
           <li><b>يوم عمل:</b> من الأحد إلى الخميس (باستثناء الإجازات الرسمية).</li>
           <li><b>عدد لا محدود من المستخدمين:</b> يُقصد به عدد حسابات المستخدمين داخل نظام GAIN، ولا يشمل ذلك أي رسوم أو حدود تخص أنظمة أو خدمات خارجية.</li>
+          <li><b>النظام:</b> منصة GAIN وجميع مكوناتها البرمجية والخدمات المرتبطة بها محل هذا العقد.</li>
         </ul>
       </section>
 
-      <!-- المادة 3 -->
-      <section class="art">
+      <!-- 3 -->
+      <section class="art" data-art="a3">
         <h2><span class="n">3</span> موضوع العقد ونطاق الخدمة</h2>
         <ol>
-          <li>يلتزم المزود بتقديم خدمة تشغيل نظام GAIN للعميل وفق نطاق الخدمة الموضح في الملحق الفني (أ) والملحق الفني (ب)، مع الاستضافة السحابية المُدارة والنسخ الاحتياطي الدوري والتحديثات الدورية والدعم الفني وفق ملحق (SLA).</li>
-          <li>تشمل الخدمة خطة الإطلاق والتفعيل حسب ما يرد في الملحق الفني (أ)، ولا توجد رسوم تأسيس.</li>
-          <li>تشمل الخدمة التحديثات الدورية وإصلاح الأعطال ضمن النسخة القياسية، ولا تشمل تطوير وظائف جديدة أو تخصيصات خاصة إلا بعرض مستقل.</li>
+          <li>يلتزم المزود بتقديم خدمة تشغيل نظام GAIN للعميل وفق نطاق الخدمة الموضح في <b>الملحق الفني (أ)</b>، مع الاستضافة السحابية المُدارة والنسخ الاحتياطي الدوري والتحديثات الدورية والدعم الفني وفق <b>ملحق (SLA)</b>.</li>
+          <li>تشمل الخدمة خطة الإطلاق والتفعيل حسب ما يرد في <b>الملحق الفني (أ)</b>، ولا توجد <b>رسوم تأسيس</b>.</li>
+          <li>تشمل الخدمة <b>التحديثات الدورية وإصلاح الأعطال ضمن النسخة القياسية</b>، ولا تشمل <b>تطوير وظائف جديدة أو تخصيصات خاصة</b> إلا بعرض مستقل.</li>
         </ol>
       </section>
 
-      <!-- المادة 4 -->
-      <section class="art">
+      <!-- 4 -->
+      <section class="art" data-art="a4">
         <h2><span class="n">4</span> مدة العقد والتجديد</h2>
         <ol>
-          <li>مدة هذا العقد سنة واحدة تبدأ من تاريخ التفعيل الفعلي:
-            <input class="fld" type="date" id="activationDate" data-k="activationDate">.</li>
+          <li>مدة هذا العقد <b>سنة واحدة</b> تبدأ من تاريخ العقد.</li>
           <li>يتجدد العقد تلقائيًا لمدة مماثلة ما لم يُخطر أحد الطرفين الطرف الآخر برغبته في عدم التجديد قبل <b>30 يومًا</b> من نهاية المدة.</li>
         </ol>
       </section>
 
-      <!-- المادة 5 -->
-      <section class="art">
+      <!-- 5 -->
+      <section class="art" data-art="a5">
         <h2><span class="n">5</span> الأسعار وآلية الدفع</h2>
-        <p class="muted">حدّد عدد الفروع وخياراتك، وسيُحسب الاشتراك تلقائيًا. الأسعار لا تشمل ضريبة القيمة المضافة (15%).</p>
+        <h3>5.1 الأسعار</h3>
+        <ol id="priceLines">
+          <li><b>الاشتراك الأساسي: <span class="px-base">2,499</span> ريال سعودي شهريًا لكل فرع</b>، ويشمل <b>عددًا لا محدودًا من المستخدمين</b>.</li>
+          <li><b>تطبيق الجوال للموظفين «تطبيق غين»</b> (نظام موارد بشرية متكامل) <b>+<span class="px-app">500</span> ريال سعودي شهريًا لكل فرع</b>، ويشمل <b>عددًا لا محدودًا من المستخدمين</b>.</li>
+          <li>جميع الأسعار <b>لا تشمل ضريبة القيمة المضافة</b> وتُضاف وفق الأنظمة المعمول بها.</li>
+          <li><b>يشمل الاشتراك</b> التفعيل المبدئي، والتدريب، ودعم الإطلاق ضمن الخطة المعتمدة.</li>
+        </ol>
 
+        <p class="muted" style="margin-top:14px">حدّد عدد الفروع وخياراتك، وسيُحسب الاشتراك تلقائيًا:</p>
         <div class="calc">
           <div class="calc-controls">
             <div class="ctrl">
@@ -274,7 +321,7 @@
             </div>
             <div class="ctrl">
               <label>تطبيق الجوال للموظفين (اختياري)</label>
-              <label class="toggle"><input type="checkbox" id="appOpt" data-k="appOpt"> «تطبيق غين» +500 ر.س/فرع</label>
+              <label class="toggle"><input type="checkbox" id="appOpt" data-k="appOpt"> «تطبيق غين» +<span class="px-app">500</span> ر.س/فرع</label>
             </div>
             <div class="ctrl">
               <label>دورية الفوترة</label>
@@ -287,208 +334,257 @@
             </div>
           </div>
           <div class="summary">
-            <div class="sum-row"><span class="lbl">الاشتراك الأساسي (2,499 ر.س × <span id="brEcho">1</span> فرع)</span><span class="val" id="baseVal">2,499 ر.س</span></div>
-            <div class="sum-row" id="appRow" style="display:none"><span class="lbl">تطبيق غين (500 ر.س × <span id="brEcho2">1</span> فرع)</span><span class="val" id="appVal">0 ر.س</span></div>
+            <div class="sum-row"><span class="lbl">الاشتراك الأساسي (<span class="px-base">2,499</span> ر.س × <span id="brEcho">1</span> فرع)</span><span class="val" id="baseVal">2,499 ر.س</span></div>
+            <div class="sum-row" id="appRow" style="display:none"><span class="lbl">تطبيق غين (<span class="px-app">500</span> ر.س × <span id="brEcho2">1</span> فرع)</span><span class="val" id="appVal">0 ر.س</span></div>
             <div class="sum-row"><span class="lbl">الإجمالي الشهري (قبل الضريبة)</span><span class="val" id="monthlyVal">2,499 ر.س</span></div>
             <div class="sum-row"><span class="lbl">قيمة الدورة (<span id="cycleEcho">شهري</span> × <span id="cycleMonthsEcho">1</span> شهر)</span><span class="val" id="cycleVal">2,499 ر.س</span></div>
-            <div class="sum-row"><span class="lbl">ضريبة القيمة المضافة (15%)</span><span class="val" id="vatVal">375 ر.س</span></div>
+            <div class="sum-row disc" id="discRow" style="display:none"><span class="lbl">الخصم<span id="discPctEcho"></span></span><span class="val" id="discVal">−0 ر.س</span></div>
+            <div class="sum-row disc-reason" id="discReasonRow" style="display:none"><span class="lbl">سبب الخصم</span><span class="val" id="discReasonVal"></span></div>
+            <div class="sum-row" id="afterDiscRow" style="display:none"><span class="lbl">قيمة الدورة بعد الخصم (قبل الضريبة)</span><span class="val" id="afterDiscVal">0 ر.س</span></div>
+            <div class="sum-row"><span class="lbl">ضريبة القيمة المضافة (<span class="px-vat">15</span>%)</span><span class="val" id="vatVal">375 ر.س</span></div>
             <div class="sum-total"><span class="lbl">الإجمالي المستحق لكل دورة (شامل الضريبة)</span><span class="val"><span id="totalVal">2,874</span> <small>ر.س</small></span></div>
           </div>
         </div>
 
+        <div data-editable="a5text">
         <h3>5.2 طريقة الدفع ودورية الفوترة</h3>
         <ol>
-          <li>يتم الدفع شهريًا أو ربع سنوي أو نصف سنوي أو سنوي حسب اختيار العميل.</li>
-          <li>يصدر المزود فاتورة في بداية كل دورة اشتراك ويتم السداد مقدمًا عن الدورة.</li>
-          <li>يقوم المزود بإشعار العميل بإصدار الفواتير عبر الوسيلة التي يحددها العميل كتابيًا عند التعاقد، ويُعد الإشعار صحيحًا منتجًا لآثاره متى ما تم الإرسال عبر تلك الوسيلة. وفي حال تغيير الوسيلة، يلتزم العميل بإبلاغ المزود كتابيًا قبل (5) أيام عمل من تاريخ الاستحقاق.</li>
+          <li>يتم الدفع <b>شهريًا</b> أو <b>ربع سنوي</b> أو <b>نصف سنوي</b> أو <b>سنوي</b> حسب اختيار العميل.</li>
+          <li>يصدر المزود فاتورة في بداية كل دورة اشتراك ويتم السداد <b>مقدمًا</b> عن الدورة.</li>
         </ol>
-        <h3>5.3 استحقاق الدفعة ومدة السداد</h3>
+
+        <h3>5.3 إشعار الفواتير</h3>
+        <p>يقوم المزود بإشعار العميل بإصدار الفواتير وإرسالها عبر <b>الوسيلة التي يحددها العميل</b> كتابيًا عند التعاقد، ويُعد الإشعار صحيحًا ومنتجًا لآثاره متى ما تم الإرسال عبر تلك الوسيلة.</p>
+        <p>وفي حال تغيير العميل للوسيلة المعتمدة، يلتزم بإبلاغ المزود كتابيًا قبل <b>(5) أيام عمل</b> من تاريخ الاستحقاق.</p>
+
+        <h3>5.4 استحقاق الدفعة ومدة السداد</h3>
         <ol>
           <li>تستحق قيمة الفاتورة فور إصدارها.</li>
-          <li>يلتزم العميل بسداد الفاتورة خلال (5) أيام عمل من تاريخ الإصدار، ما لم يتفق الطرفان كتابيًا على خلاف ذلك.</li>
+          <li>يلتزم العميل بسداد الفاتورة خلال <b>(5) أيام عمل</b> من تاريخ الإصدار، ما لم يتفق الطرفان كتابيًا على خلاف ذلك.</li>
         </ol>
-        <h3>5.4 التأخر في السداد</h3>
+
+        <h3>5.5 التأخر في السداد</h3>
         <ol>
-          <li>في حال تأخر العميل عن السداد لأكثر من (10) أيام عمل من تاريخ الاستحقاق، يحق للمزود تعليق الخدمة مؤقتًا بعد إشعار العميل، لحين السداد.</li>
-          <li>في حال استمرار التأخر لأكثر من (30) يومًا من تاريخ الاستحقاق، يحق للمزود إنهاء العقد وفق المادة (16)، مع احتفاظه بحقه في المطالبة بالمبالغ المستحقة حتى تاريخ الإنهاء.</li>
+          <li>في حال تأخر العميل عن السداد لأكثر من <b>(10) أيام عمل</b> من تاريخ الاستحقاق، يحق للمزود <b>تعليق الخدمة مؤقتًا</b> بعد إشعار العميل، لحين السداد.</li>
+          <li>في حال استمرار التأخر لأكثر من <b>(30) يومًا</b> من تاريخ الاستحقاق، يحق للمزود إنهاء العقد وفق المادة (18)، مع احتفاظه بحقه في المطالبة بالمبالغ المستحقة حتى تاريخ الإنهاء.</li>
           <li>لا يترتب على تعليق الخدمة أي تمديد تلقائي لمدة الاشتراك ما لم يتفق الطرفان كتابيًا.</li>
-          <li>تُستأنف الخدمة خلال (1) يوم عمل من تأكيد استلام المبلغ المستحق، ما لم توجد التزامات أخرى قائمة.</li>
+          <li>تُستأنف الخدمة خلال <b>(1) يوم عمل</b> من تأكيد استلام المبلغ المستحق، ما لم توجد التزامات أخرى قائمة.</li>
         </ol>
+
+        <h3>5.6 تعديل الأسعار</h3>
+        <p>يجوز للمزود مراجعة أسعار الاشتراك من وقت لآخر بما يتناسب مع تطوير الخدمات أو تغيّر التكاليف التشغيلية، على أن يسري أي تعديل اعتبارًا من <b>دورة التجديد التالية فقط</b>، وبعد إشعار العميل قبل موعد التجديد بما لا يقل عن <b>(30) يومًا</b>، ويحق للعميل عندئذٍ قبول التجديد بالأسعار الجديدة أو عدم تجديد الاشتراك دون أي التزام إضافي.</p>
+        </div>
       </section>
 
-      <!-- المادة 6 -->
-      <section class="art">
+      <!-- 6 -->
+      <section class="art" data-art="a6">
         <h2><span class="n">6</span> الاستضافة والنسخ الاحتياطي</h2>
         <ol>
-          <li>تُقدَّم الخدمة عبر استضافة سحابية مُدارة من المزود.</li>
-          <li>يلتزم المزود بتنفيذ نسخ احتياطي دوري وفق سياسات التشغيل المعتمدة لديه.</li>
+          <li>تُقدَّم الخدمة عبر <b>استضافة سحابية مُدارة من المزود</b>.</li>
+          <li>يلتزم المزود بتنفيذ <b>نسخ احتياطي دوري</b> وفق سياسات التشغيل المعتمدة لديه.</li>
           <li>يلتزم العميل بإدارة المستخدمين والصلاحيات داخل منشأته بما يضمن حماية بيانات الدخول.</li>
         </ol>
       </section>
 
-      <!-- المادة 7 -->
-      <section class="art">
-        <h2><span class="n">7</span> التكاملات والرسوم المتعلقة بالجهات والأنظمة</h2>
+      <!-- 7 -->
+      <section class="art" data-art="a7">
+        <h2><span class="n">7</span> التحديثات والصيانة</h2>
         <ol>
-          <li>يشمل الاشتراك التفعيل والربط الفني للتكاملات المذكورة في هذا العقد وملحقاته وفق المتطلبات الفنية وتوفر الصلاحيات.</li>
-          <li>في حال ترتّب على استخدام أي من هذه الأنظمة أو الخدمات رسوم اشتراك أو تشغيل أو ربط أو أي رسوم مماثلة تفرضها الجهة المالكة للنظام أو مزود الخدمة (حاليًا أو مستقبلًا)، فإن العميل يتحمّل تلك الرسوم.</li>
+          <li>يحق للمزود إجراء التحديثات الفنية والأمنية والتطويرية وأعمال الصيانة المجدولة التي يراها ضرورية لتحسين أداء النظام أو المحافظة على أمنه واستقراره.</li>
+          <li>يحرص المزود — متى كان ذلك ممكنًا — على تنفيذ أعمال الصيانة خارج أوقات الذروة وإشعار العميل مسبقًا إذا كان لها أثر جوهري على الخدمة.</li>
+          <li>لا تعد التحديثات أو أعمال الصيانة المجدولة التي تتم وفق أحكام هذه المادة إخلالًا بالتزامات المزود التعاقدية، ويجوز أن تتضمن التحديثات تحسينات أو تطويرات أو خصائص جديدة، ويخضع توفيرها للباقات والخطط المعتمدة لدى المزود وقت إطلاقها.</li>
+        </ol>
+      </section>
+
+      <!-- 8 -->
+      <section class="art" data-art="a8">
+        <h2><span class="n">8</span> التكاملات والرسوم المتعلقة بالجهات والأنظمة</h2>
+        <ol>
+          <li>يشمل الاشتراك <b>التفعيل والربط الفني</b> للتكاملات وفق المتطلبات الفنية وتوفر الصلاحيات.</li>
+          <li>في حال ترتّب على استخدام أي من هذه الأنظمة أو الخدمات <b>رسوم اشتراك أو رسوم تشغيل أو رسوم ربط أو أي رسوم مماثلة</b> تفرضها الجهة المالكة للنظام أو مزود الخدمة (حاليًا أو مستقبلًا)، فإن <b>العميل يتحمّل تلك الرسوم</b>.</li>
           <li>يلتزم العميل بتوفير التفويضات والصلاحيات والمتطلبات اللازمة للتفعيل لدى الجهات ذات العلاقة عند الحاجة.</li>
         </ol>
       </section>
 
-      <!-- المادة 8 -->
-      <section class="art">
-        <h2><span class="n">8</span> نقل البيانات من النظام السابق</h2>
+      <!-- 9 -->
+      <section class="art" data-art="a9">
+        <h2><span class="n">9</span> نقل البيانات من النظام السابق</h2>
         <ol>
-          <li>نقل البيانات يعتمد على تقييم فني للنظام السابق (نوع البيانات، إمكانية التصدير، الجودة، حجم البيانات).</li>
+          <li>نقل البيانات يعتمد على <b>تقييم فني</b> للنظام السابق (نوع البيانات، إمكانية التصدير، الجودة، حجم البيانات).</li>
           <li>بعد التقييم يزوّد المزود العميل بنتيجة وخطة عمل، ويتم توضيح نطاق النقل والمدة المتوقعة والتكلفة واعتمادها قبل التنفيذ.</li>
         </ol>
       </section>
 
-      <!-- المادة 9 -->
-      <section class="art">
-        <h2><span class="n">9</span> الدعم الفني واتفاقية مستوى الخدمة (SLA)</h2>
+      <!-- 10 -->
+      <section class="art" data-art="a10">
+        <h2><span class="n">10</span> الدعم الفني واتفاقية مستوى الخدمة (SLA)</h2>
         <ol>
-          <li>يقدّم المزود الدعم الفني وفق ملحق (SLA).</li>
-          <li>زمن الاستجابة يعني بدء التعامل مع البلاغ وتأكيد استلامه وتشخيصه، ولا يعني بالضرورة حلّه فورًا.</li>
+          <li>يقدّم المزود الدعم الفني وفق <b>ملحق (SLA)</b>.</li>
+          <li><b>زمن الاستجابة</b> يعني بدء التعامل مع البلاغ وتأكيد استلامه وتشخيصه، ولا يعني بالضرورة حلّه فورًا.</li>
           <li>قنوات الدعم يتم الاتفاق عليها عند التعاقد بما يضمن سهولة التواصل وسرعة معالجة البلاغات.</li>
+          <li>لا يشمل الدعم الفني تطوير خصائص جديدة أو إجراء تعديلات خاصة بطلب العميل أو معالجة الأعطال الناتجة عن أنظمة أو أجهزة أو خدمات خارجية غير معتمدة من المزود، ما لم يتم الاتفاق على ذلك كتابة.</li>
         </ol>
       </section>
 
-      <!-- المادة 10 -->
-      <section class="art">
-        <h2><span class="n">10</span> التزامات العميل</h2>
+      <!-- 11 -->
+      <section class="art" data-art="a11">
+        <h2><span class="n">11</span> التزامات العميل</h2>
         <p>يلتزم العميل بما يلي:</p>
         <ol>
           <li>توفير البيانات الأساسية المطلوبة للتهيئة وتمكين الوصول الفني عند الحاجة خلال المدة المتفق عليها.</li>
           <li>تعيين ممثل / منسق مشروع للتنسيق والاعتمادات.</li>
           <li>المحافظة على سرية بيانات الدخول وعدم مشاركتها، واعتماد مستخدمين وصلاحيات مناسبة.</li>
-          <li>يلتزم العميل بتوفير البيانات الأساسية المطلوبة للتهيئة خلال (10) أيام عمل من تاريخ طلبها، وفي حال التأخر يحق للمزود تعديل جدول التفعيل بما يتناسب مع ذلك.</li>
+          <li>يلتزم العميل بتوفير البيانات الأساسية المطلوبة للتهيئة خلال <b>(10) أيام عمل</b> من تاريخ طلبها، وفي حال التأخر يحق للمزود تعديل جدول التفعيل بما يتناسب مع ذلك.</li>
+          <li>يلتزم العميل باستخدام النظام استخدامًا مشروعًا وعدم القيام بأي ممارسة قد تؤثر على أمن النظام أو استقراره أو حقوق المستخدمين الآخرين.</li>
         </ol>
       </section>
 
-      <!-- المادة 11 -->
-      <section class="art">
-        <h2><span class="n">11</span> التغيير في نطاق العمل وحق الرفض</h2>
+      <!-- 12 -->
+      <section class="art" data-art="a12">
+        <h2><span class="n">12</span> التغيير في نطاق العمل وحق الرفض</h2>
         <ol>
           <li>أي طلب خارج نطاق هذا العقد وملحقاته يتم توثيقه كنطاق إضافي، ويقدّم المزود للعميل عرضًا بالسعر والمدة، ولا يتم التنفيذ إلا بعد اعتماد العميل.</li>
-          <li>للمزود الحق في رفض أي طلب إضافي إذا كان غير متاح ضمن منتجاته أو غير ممكن فنيًا أو يتعارض مع سياسات التشغيل أو المتطلبات النظامية.</li>
+          <li><b>للمزود الحق في رفض أي طلب إضافي</b> إذا كان غير متاح ضمن منتجاته أو غير ممكن فنيًا أو يتعارض مع سياسات التشغيل أو المتطلبات النظامية.</li>
         </ol>
       </section>
 
-      <!-- المادة 12 -->
-      <section class="art">
-        <h2><span class="n">12</span> السرية وحماية البيانات</h2>
+      <!-- 13 -->
+      <section class="art" data-art="a13">
+        <h2><span class="n">13</span> السرية وحماية البيانات</h2>
         <ol>
-          <li>يلتزم الطرفان بسرية المعلومات والبيانات المتبادلة وعدم استخدامها إلا لغرض تنفيذ هذا العقد.</li>
-          <li>يلتزم المزود باتخاذ إجراءات تنظيمية وتقنية معقولة لحماية بيانات العميل ضمن بيئة التشغيل السحابية.</li>
-          <li>تبقى بيانات العميل مملوكة له. وعند إنهاء العقد يمكن للعميل طلب تصدير البيانات المتاحة بصيغة قياسية، وفق نطاق وزمن يُتفق عليه، وقد يترتب عليه تكلفة حسب حجم البيانات.</li>
+          <li>يلتزم الطرفان بالمحافظة على سرية جميع المعلومات والبيانات المتبادلة وعدم استخدامها أو الإفصاح عنها إلا بالقدر اللازم لتنفيذ هذا العقد أو تنفيذًا لالتزام نظامي.</li>
+          <li>يلتزم المزود بتطبيق التدابير الفنية والتنظيمية المعقولة لحماية بيانات العميل داخل بيئة التشغيل السحابية من الوصول غير المصرح به أو الفقد أو التعديل أو الإفصاح.</li>
+          <li>تبقى جميع بيانات العميل وسجلاته ومحتوياته <b>مملوكة للعميل</b>، ولا يكتسب المزود أي حق ملكية عليها، ويقتصر دوره على معالجتها واستضافتها وفق أحكام هذا العقد.</li>
+          <li>يلتزم الطرفان بمعالجة البيانات الشخصية والبيانات الصحية — متى كانت محلًا للخدمة — وفق الأنظمة واللوائح والتعليمات السارية في المملكة العربية السعودية، بما في ذلك <b>نظام حماية البيانات الشخصية</b> وأي متطلبات تنظيمية تصدر عن الجهات المختصة.</li>
+          <li>عند انتهاء أو إنهاء هذا العقد يحتفظ المزود ببيانات العميل لمدة <b>(30) يومًا</b> من تاريخ انتهاء العقد، ويحق للعميل خلال هذه المدة طلب تصدير بياناته بصيغة إلكترونية معتمدة، وبعد انتهاء هذه المدة يجوز للمزود حذف البيانات أو إتلافها وفق سياسات الاحتفاظ بالبيانات، ما لم يوجد التزام نظامي بخلاف ذلك.</li>
+          <li>يلتزم العميل بالحصول على جميع الموافقات أو الأسس النظامية اللازمة لمعالجة البيانات الشخصية أو الصحية الخاصة بمستفيديه داخل النظام، ويتحمل مسؤولية صحة البيانات المدخلة ومشروعية جمعها.</li>
         </ol>
       </section>
 
-      <!-- المادة 13 -->
-      <section class="art">
-        <h2><span class="n">13</span> قبول التسليم وتفعيل النظام</h2>
+      <!-- 14 -->
+      <section class="art" data-art="a14">
+        <h2><span class="n">14</span> قبول التسليم وتفعيل النظام</h2>
         <ol>
-          <li>يُعد النظام مقبولًا للتشغيل عند اكتمال التهيئة وإتاحة الوصول للمستخدمين وتنفيذ تجربة تشغيل أولية (UAT).</li>
-          <li>يُعد النظام مفعّلًا عند إتاحة الوصول للعميل وتنفيذ تجربة تشغيل أولية (UAT)، أو بعد مضي (5) أيام عمل من توفير البيانات المطلوبة من العميل، أيهما أقرب.</li>
-          <li>ما لم يقدّم العميل ملاحظات جوهرية خلال (5) أيام عمل من تاريخ بدء (UAT)، يُعد ذلك قبولًا ضمنيًا للتشغيل.</li>
+          <li>يُعد النظام <b>مقبولًا للتشغيل</b> عند اكتمال التهيئة وإتاحة الوصول للمستخدمين وتنفيذ تجربة تشغيل أولية (UAT).</li>
+          <li>يلتزم العميل بمراجعة النظام وتقديم ملاحظاته الجوهرية خلال <b>(5) أيام عمل</b> من تاريخ بدء تجربة التشغيل الأولية (UAT).</li>
+          <li>يُعد النظام مقبولًا ومفعّلًا عند اعتماد العميل له، أو عند انتهاء المدة المشار إليها في الفقرة السابقة دون تقديم ملاحظات جوهرية.</li>
         </ol>
       </section>
 
-      <!-- المادة 14 -->
-      <section class="art">
-        <h2><span class="n">14</span> حدود المسؤولية وعدم مسؤولية التكاملات الخارجية</h2>
+      <!-- 15 -->
+      <section class="art" data-art="a15">
+        <h2><span class="n">15</span> حدود المسؤولية</h2>
         <ol>
-          <li>مسؤولية المزود عن أي أضرار أو خسائر مباشرة ناشئة عن هذا العقد تكون في حدود ما يثبت أنه نتج عن خطأ جسيم من المزود، وبحد أقصى لا يتجاوز إجمالي المبالغ المدفوعة من العميل للمزود خلال (3) أشهر السابقة لسبب المطالبة.</li>
+          <li>مسؤولية المزود عن أي أضرار أو خسائر مباشرة ناشئة عن هذا العقد تكون في حدود ما يثبت أنه نتج عن خطأ جسيم من المزود، وبحد أقصى لا يتجاوز إجمالي المبالغ المدفوعة من العميل للمزود خلال <b>(3) أشهر</b> السابقة لسبب المطالبة.</li>
           <li>لا يتحمل المزود أي خسائر غير مباشرة أو تبعية مثل فوات الفرص أو خسارة الأرباح أو فقدان البيانات الناتج عن طرف خارجي أو استخدام غير صحيح أو انقطاع خدمات خارج نطاق سيطرة المزود.</li>
-          <li>لا يتحمل المزود أي مسؤولية عن تعطل أو فشل أي تكامل خارجي أو خدمات طرف ثالث خارجة عن سيطرته، بما في ذلك الانقطاعات أو الأعطال أو التغييرات التي تطرأ من مزودي الخدمات أو الجهات المالكة للأنظمة.</li>
+          <li><b>لا يتحمل المزود أي مسؤولية عن تعطل أو فشل أي تكامل خارجي أو خدمات طرف ثالث خارجة عن سيطرته</b>، بما في ذلك الانقطاعات أو الأعطال أو التغييرات التي تطرأ من مزودي الخدمات أو الجهات المالكة للأنظمة.</li>
+          <li>كما لا يتحمل المزود المسؤولية عن أي انقطاع أو خلل ناتج عن خدمات الإنترنت لدى العميل، أو أعطال أجهزته، أو البرامج أو الخدمات المقدمة من أطراف ثالثة، أو أي استخدام مخالف لتعليمات التشغيل.</li>
         </ol>
       </section>
 
-      <!-- المادة 15 -->
-      <section class="art">
-        <h2><span class="n">15</span> القوة القاهرة وتعذر الخدمة</h2>
+      <!-- 16 -->
+      <section class="art" data-art="a16">
+        <h2><span class="n">16</span> الملكية الفكرية</h2>
+        <ol>
+          <li>جميع حقوق الملكية الفكرية المتعلقة بمنصة GAIN، بما في ذلك البرامج، والأكواد المصدرية والتنفيذية، وقواعد البيانات، والتصاميم، وواجهات المستخدم، والخوارزميات، والوثائق الفنية، والعلامات التجارية، وأي تحديثات أو تطويرات أو تحسينات مستقبلية، هي <b>ملك حصري للمزود</b> وتبقى جميع حقوقها محفوظة له.</li>
+          <li>يمنح هذا العقد العميل حقًا <b>غير حصري وغير قابل للتنازل أو الترخيص من الباطن</b> لاستخدام النظام طوال مدة الاشتراك ووفقًا لأحكام هذا العقد، ولا يترتب على ذلك نقل أو التنازل عن أي من حقوق الملكية الفكرية إلى العميل، وتنتهي حقوق الاستخدام بانتهاء أو إنهاء العقد.</li>
+          <li>لا يجوز للعميل أو لأي طرف يعمل لصالحه نسخ النظام أو إعادة إنتاجه أو تعديله أو إجراء الهندسة العكسية عليه أو محاولة استخراج الكود المصدري أو إعادة بيعه أو تأجيره أو إتاحته للغير أو إنشاء أعمال مشتقة منه أو إزالة أي إشعارات تتعلق بحقوق الملكية الفكرية، إلا بموافقة كتابية مسبقة من المزود.</li>
+        </ol>
+      </section>
+
+      <!-- 17 -->
+      <section class="art" data-art="a17">
+        <h2><span class="n">17</span> القوة القاهرة وتعذر الخدمة</h2>
         <ol>
           <li>لا يعد أي طرف مسؤولًا عن التأخير أو عدم التنفيذ الناتج عن ظروف خارجة عن إرادته (القوة القاهرة) مثل تعطل خدمات الاتصالات أو انقطاع مزودي الخدمات السحابية أو قرارات الجهات التنظيمية أو الأعطال العامة أو الكوارث.</li>
           <li>يتم إخطار الطرف الآخر، وتُمنح مدة مناسبة لاستئناف الخدمة.</li>
-          <li>إذا استمر التعذر لمدة تتجاوز (30) يومًا جاز لأي طرف إنهاء العقد دون مسؤولية، مع تسوية المستحقات حتى تاريخ الإنهاء.</li>
+          <li>إذا استمر التعذر لمدة تتجاوز <b>(30) يومًا</b> جاز لأي طرف إنهاء العقد دون مسؤولية، مع تسوية المستحقات حتى تاريخ الإنهاء.</li>
         </ol>
       </section>
 
-      <!-- المادة 16 -->
-      <section class="art">
-        <h2><span class="n">16</span> الإنهاء</h2>
+      <!-- 18 -->
+      <section class="art" data-art="a18">
+        <h2><span class="n">18</span> الإنهاء</h2>
         <ol>
-          <li>يحق لأي طرف إنهاء العقد عند إخلال الطرف الآخر إخلالًا جوهريًا ولم يقم بمعالجته خلال 15 يومًا من تاريخ إشعار مكتوب.</li>
-          <li>لا يؤثر الإنهاء على المستحقات المالية المتراكمة حتى تاريخ الإنهاء.</li>
+          <li>يجوز لأي من الطرفين إنهاء هذا العقد إذا أخل الطرف الآخر إخلالًا جوهريًا بأي من التزاماته ولم يقم بمعالجة الإخلال خلال <b>(15) يومًا</b> من تاريخ إشعاره كتابة.</li>
+          <li>لا يؤثر إنهاء العقد على الحقوق أو الالتزامات أو المستحقات المالية الناشئة قبل تاريخ الإنهاء.</li>
+          <li>يجوز للمزود تعليق الخدمة مؤقتًا، كليًا أو جزئيًا، إذا تبين وجود:
+            <ol class="alpha">
+              <li>استخدام غير مشروع للنظام.</li>
+              <li>إساءة استخدام تؤثر على أمن أو استقرار المنصة.</li>
+              <li>محاولات اختراق أو هجمات إلكترونية أو مخاطر أمنية تستوجب ذلك.</li>
+              <li>مخالفة جوهرية لأحكام هذا العقد.</li>
+            </ol>
+          </li>
+          <li>ويحرص المزود — متى كان ذلك ممكنًا — على إشعار العميل قبل التعليق أو فور اتخاذ الإجراء، ومنحه فرصة لمعالجة المخالفة إذا كانت طبيعتها تسمح بذلك.</li>
+          <li>لا يعد تعليق الخدمة إنهاءً للعقد، وتستأنف الخدمة بعد زوال سبب التعليق واستيفاء المتطلبات اللازمة لإعادة التشغيل.</li>
         </ol>
       </section>
 
-      <!-- المادة 17 -->
-      <section class="art">
-        <h2><span class="n">17</span> القانون والاختصاص</h2>
-        <p>يخضع هذا العقد ويُفسّر وفق القانون السعودي، ويُفصل في أي نزاع وفق الأنظمة النافذة في المملكة العربية السعودية.</p>
+      <!-- 19 -->
+      <section class="art" data-art="a19">
+        <h2><span class="n">19</span> القانون والاختصاص</h2>
+        <p>يخضع هذا العقد ويُفسّر وفق <b>القانون السعودي</b>، ويُفصل في أي نزاع وفق الأنظمة النافذة في المملكة العربية السعودية.</p>
       </section>
 
-      <!-- المادة 18 -->
-      <section class="art">
-        <h2><span class="n">18</span> الحساب البنكي</h2>
+      <!-- 20 -->
+      <section class="art" data-art="a20">
+        <h2><span class="n">20</span> الحساب البنكي</h2>
         <div class="bank">
           <div>اسم الحساب: <b>غين لتقنية المعلومات</b></div>
           <div>البنك: <b>بنك الإنماء</b></div>
-          <div>رقم الحساب: <b style="direction:ltr;unicode-bidi:embed;display:inline-block">68207210157000</b></div>
-          <div>الآيبان (IBAN): <b style="direction:ltr;unicode-bidi:embed;display:inline-block">SA5205000068207210157</b></div>
+          <div>رقم الحساب: <b class="ltr">68207210157000</b></div>
+          <div>الآيبان: <b class="ltr">SA5205000068207210157000</b></div>
         </div>
       </section>
 
-      <!-- المادة 19 -->
-      <section class="art">
-        <h2><span class="n">19</span> التوقيع</h2>
+      <!-- 21 -->
+      <section class="art" data-art="a21">
+        <h2><span class="n">21</span> التوقيع</h2>
         <div class="sign-grid">
           <div class="sign-box">
-            <h4>عن غين لتقنية المعلومات <span class="tag prov" style="font-size:11px;padding:3px 10px;border-radius:999px">المزود</span></h4>
-            <div class="sign-static">
-              <div class="line"><span>الاسم:</span> <input class="fld" data-k="provSignName" placeholder="اسم الموقّع" style="min-width:180px"></div>
-              <div class="line"><span>الصفة:</span> <b>الرئيس التنفيذي</b></div>
-              <div class="line"><span>التوقيع والختم:</span></div>
-              <div class="draw"></div>
-            </div>
+            <h4>عن غين لتقنية المعلومات <span class="tag prov">المزود</span></h4>
+            <div class="sign-line"><span class="k">الاسم:</span> <b>محمد بن علي الضويلع</b></div>
+            <div class="sign-line"><span class="k">الصفة:</span> <b>الرئيس التنفيذي</b></div>
+            <div class="sign-line"><span class="k">التوقيع:</span></div>
+            <div class="sig-slot"><img src="assets/gain-signature.png" alt="توقيع محمد بن علي الضويلع"></div>
+            <div class="signed-chip"><i data-lucide="badge-check"></i> موقّع مسبقًا من غين</div>
+            <div class="sign-line" style="margin-top:12px"><span class="k">التاريخ:</span> <b id="provDateEcho">—</b></div>
           </div>
+
           <div class="sign-box">
-            <h4>عن <span id="cliNameEcho">العميل</span> <span class="tag cli" style="font-size:11px;padding:3px 10px;border-radius:999px">العميل</span></h4>
-            <div class="sign-static">
-              <div class="line"><span>الاسم:</span> <input class="fld" data-k="cliSignName" placeholder="اسم الموقّع" style="min-width:180px"></div>
-              <div class="line"><span>الصفة:</span> <input class="fld" data-k="cliSignTitle" placeholder="المنصب" style="min-width:150px"></div>
-              <div class="line"><span>التوقيع:</span></div>
-              <div class="sign-pad-wrap">
-                <canvas class="sign-pad" id="sigPad"></canvas>
-                <div class="sign-pad-hint" id="sigHint">وقّع هنا بإصبعك أو الفأرة</div>
-              </div>
-              <button class="btn btn-ghost sign-clear" id="sigClear" style="color:var(--ink-soft);border-color:var(--line)"><i data-lucide="eraser"></i> مسح التوقيع</button>
+            <h4>عن <span id="cliNameEcho">العميل</span> <span class="tag cli">العميل</span></h4>
+            <div class="sign-line"><span class="k">الاسم:</span> <input class="fld" data-k="cliSignName" placeholder="اسم الموقّع" style="min-width:170px"></div>
+            <div class="sign-line"><span class="k">الصفة:</span> <input class="fld" data-k="cliSignTitle" placeholder="المنصب" style="min-width:150px"></div>
+            <div class="sign-line"><span class="k">التوقيع:</span></div>
+            <div class="sign-pad-wrap">
+              <canvas class="sign-pad" id="sigPad"></canvas>
+              <div class="sign-pad-hint" id="sigHint">وقّع هنا بإصبعك أو الفأرة</div>
             </div>
+            <button class="btn btn-ghost sign-clear" id="sigClear"><i data-lucide="eraser"></i> مسح التوقيع</button>
+            <div class="sign-line" style="margin-top:12px"><span class="k">التاريخ:</span> <b id="cliDateEcho">—</b></div>
           </div>
         </div>
 
         <div class="agree">
           <input type="checkbox" id="agreeChk" data-k="agree">
-          <label for="agreeChk">أقر بأنني اطّلعت على كامل بنود هذا العقد وملحقاته (الملحق الفني أ، الملحق الفني ب، وملحق مستوى الخدمة SLA)، وأوافق عليها، وأن البيانات المُدخلة صحيحة.</label>
+          <label for="agreeChk">أقر بأنني اطّلعت على كامل بنود هذا العقد وملحقاته (الملحق الفني (أ) وملحق مستوى الخدمة SLA)، وأوافق عليها، وأن البيانات المُدخلة صحيحة.</label>
         </div>
       </section>
 
       <!-- الملحق أ -->
-      <section class="art">
+      <section class="art" data-art="annexA">
         <h2><span class="n">أ</span> الملحق الفني (أ): نطاق منصة GAIN وخطة التفعيل</h2>
         <h3>أولًا: نطاق منصة GAIN لإدارة وتشغيل العيادات يشمل</h3>
         <ul>
           <li>إدارة المرضى والمواعيد والسجلات الطبية (EMR / PMS)</li>
           <li>إدارة الفوترة والمحاسبة</li>
           <li>إدارة المخزون والمشتريات</li>
-          <li>إدارة الموارد البشرية</li>
+          <li><b>إدارة الموارد البشرية</b></li>
           <li>إدارة العمليات اليومية والتشغيل</li>
           <li>التقارير ولوحات المتابعة</li>
           <li>التكامل مع الأنظمة الحكومية والمالية</li>
-          <li>تطبيق الجوال «تطبيق غين» كامتداد تشغيلي للنظام (اختياري)</li>
+          <li>تطبيق الجوال <b>«تطبيق غين»</b> كامتداد تشغيلي للنظام <b>(اختياري)</b></li>
         </ul>
         <h3>ثانيًا: عناصر النطاق التفصيلية</h3>
         <ol>
@@ -497,14 +593,14 @@
           <li>السجلات الطبية الإلكترونية (EMR).</li>
           <li>الفوترة والمحاسبة.</li>
           <li>المخزون والمشتريات.</li>
-          <li>الموارد البشرية (HR).</li>
+          <li><b>الموارد البشرية (HR).</b></li>
           <li>التقارير ولوحات المتابعة.</li>
           <li>التهيئة والإعدادات (ضمن الاشتراك).</li>
-          <li>تدريب المستخدمين وإدارة النظام ودعم الإطلاق مشمولة ضمن الاشتراك وفق خطة التفعيل المعتمدة.</li>
+          <li><b>تدريب المستخدمين وإدارة النظام ودعم الإطلاق مشمولة ضمن الاشتراك</b> وفق خطة التفعيل المعتمدة.</li>
           <li>الاستضافة السحابية المُدارة والنسخ الاحتياطي الدوري.</li>
         </ol>
         <h3>ثالثًا: خطة التفعيل المبدئية</h3>
-        <p class="lead-note">يتفق الطرفان على أن خطة التفعيل التالية مبدئية، ويتم اعتمادها نهائيًا بعد مراجعة العميل وتأكيد الجاهزية.</p>
+        <p class="lead-note">يتفق الطرفان على أن خطة التفعيل التالية <b>مبدئية</b>، ويتم اعتمادها نهائيًا بعد مراجعة العميل وتأكيد الجاهزية.</p>
         <h4>المرحلة (1): المواءمة وتجهيز البيانات</h4>
         <ul><li>اجتماع مواءمة لتثبيت نطاق التهيئة وتحديد ممثل العميل والمتطلبات.</li><li>استلام بيانات العيادة الأساسية (الخدمات، الأطباء، جداول العمل، الصلاحيات، القوالب).</li></ul>
         <h4>المرحلة (2): مراجعة البيانات السابقة وتقييم الترحيل</h4>
@@ -514,8 +610,11 @@
         <h4>المرحلة (4): التدريب والإطلاق</h4>
         <ul><li>تنفيذ التدريب وإدارة النظام ودعم الإطلاق وفق خطة التفعيل المعتمدة.</li><li>الإطلاق الرسمي والمتابعة ضمن خطة الإطلاق.</li></ul>
         <p class="muted"><b>ملاحظة اعتماد:</b> يعتمد الجدول الزمني التفصيلي وآلية التنفيذ النهائية بعد اعتماد خطة التفعيل من العميل وتوفر البيانات والصلاحيات اللازمة.</p>
+        <p class="muted">للمزود الحق في تطوير وتحسين الوظائف القياسية للنظام بصورة مستمرة، بما يسهم في رفع جودة الخدمة وكفاءة الأداء، ولا يترتب على ذلك التزام بتوفير خصائص أو تطويرات خاصة ما لم يتم الاتفاق عليها كتابة.</p>
+
         <h3>رابعًا: تطبيق الجوال «تطبيق غين» (اختياري للموظفين)</h3>
-        <p>يوفر تطبيق غين وصولًا متكاملًا لموظفي العميل إلى نظام GAIN عبر الأجهزة الذكية، ويُعد امتدادًا تشغيليًا للنظام يتيح تنفيذ وإدارة العمليات اليومية من أي مكان. ويشمل التطبيق:</p>
+        <p>يوفر <b>تطبيق غين</b> وصولًا متكاملًا لموظفي العميل إلى نظام GAIN عبر الأجهزة الذكية، ويُعد امتدادًا تشغيليًا للنظام يتيح تنفيذ وإدارة العمليات اليومية من أي مكان.</p>
+        <h4>ويشمل التطبيق المزايا التالية:</h4>
         <ul>
           <li>إدارة الموارد البشرية (الحضور والانصراف، الإجازات، الرواتب، المصاريف)</li>
           <li>إدارة المبيعات (إنشاء العروض والطلبات ومتابعة العملاء)</li>
@@ -524,46 +623,29 @@
           <li>إشعارات وتنبيهات فورية</li>
           <li>دعم العمل الميداني باستخدام تحديد الموقع الجغرافي</li>
         </ul>
-        <p class="muted">كما تشمل مزايا التطبيق أي مزايا قياسية أخرى ضمن إصدار التطبيق المعتمد لدى المزود وقت التفعيل.</p>
-      </section>
-
-      <!-- الملحق ب -->
-      <section class="art">
-        <h2><span class="n">ب</span> الملحق الفني (ب): التكاملات المشمولة ضمن نطاق النظام</h2>
-        <ol>
-          <li><b>نفيس (NPHIES):</b> مشمول (الربط الفني) وفق متطلبات الجهة وتوفر الصلاحيات.</li>
-          <li><b>هيئة الزكاة والضريبة والجمارك (ZATCA):</b> مشمول (دعم الفوترة الإلكترونية) وفق الأنظمة، بما في ذلك الفوترة الإلكترونية (المرحلة الثانية) والربط التلقائي مع الهيئة.</li>
-          <li><b>يقين:</b> مشمول (الربط الفني) وفق متطلبات الجهة وتوفر الصلاحيات.</li>
-          <li><b>نفاذ:</b> مشمول (الربط الفني) وفق متطلبات الجهة وتوفر الصلاحيات.</li>
-          <li><b>ربط المدفوعات الإلكترونية:</b> مشمول (الربط الفني) وفق آلية يتم الاتفاق عليها، مع تحمّل العميل رسوم مزود خدمة الدفع.</li>
-          <li><b>تابي (Tabby):</b> مشمول (الربط الفني) عبر مزود الدفع المتاح، ورسوم مزود الخدمة على العميل.</li>
-          <li><b>تمارا (Tamara):</b> مشمول (الربط الفني) عبر مزود الدفع المتاح، ورسوم مزود الخدمة على العميل.</li>
-          <li><b>Fantasy Hub:</b> مشمول (الربط الفني) وفق آلية يتم الاتفاق عليها وتوفر الصلاحيات.</li>
-          <li><b>متصل:</b> مشمول (الربط الفني) وفق آلية يتم الاتفاق عليها وتوفر الصلاحيات.</li>
-          <li><b>مقسم:</b> مشمول (الربط الفني) وفق آلية يتم الاتفاق عليها وتوفر الصلاحيات.</li>
-        </ol>
-        <p class="muted">أي رسوم تفرضها الجهات / الأنظمة أو مزودو الخدمات (حاليًا أو مستقبلًا) يتحملها العميل وفق بنود العقد. كما أن استمرارية عمل التكاملات الخارجية تخضع لمزوديها والجهات المالكة لها، ولا يتحمل المزود مسؤولية تعطلها خارج نطاق سيطرته.</p>
+        <p class="muted"><b>كما تشمل مزايا التطبيق أي مزايا قياسية أخرى ضمن إصدار التطبيق المعتمد لدى المزود وقت التفعيل.</b></p>
+        <p class="muted">ويهدف التطبيق إلى تمكين التشغيل الرقمي الكامل للعيادة وتحسين كفاءة الفرق التشغيلية وتقليل الاعتماد على الإجراءات اليدوية.</p>
       </section>
 
       <!-- ملحق SLA -->
-      <section class="art">
-        <h2><span class="n">SLA</span> ملحق اتفاقية مستوى الخدمة</h2>
+      <section class="art" data-art="sla">
+        <h2><span class="n">SLA</span> ملحق (SLA): اتفاقية مستوى الخدمة</h2>
         <h3>1) ساعات الدعم</h3>
-        <p>الأحد – الخميس: 9:00 ص – 6:00 م (قابلة للتعديل بالاتفاق).</p>
+        <p>الأحد – الخميس: <b>9:00 ص – 6:00 م</b> (قابلة للتعديل بالاتفاق).</p>
         <h3>2) تصنيف البلاغات وزمن الاستجابة</h3>
         <table class="price">
           <thead><tr><th>التصنيف</th><th>الوصف</th><th>زمن الاستجابة</th></tr></thead>
           <tbody>
-            <tr><td>حرِج</td><td>تعطل كامل / توقف خدمة رئيسية</td><td>خلال ساعتين ضمن ساعات الدعم</td></tr>
-            <tr><td>عالٍ</td><td>تأثير كبير على التشغيل مع وجود بديل مؤقت</td><td>خلال 4 ساعات</td></tr>
-            <tr><td>متوسط</td><td>تأثير محدود على جزء من الوظائف</td><td>خلال يوم عمل</td></tr>
-            <tr><td>منخفض</td><td>طلبات تحسين / استفسارات / ملاحظات</td><td>خلال يومي عمل</td></tr>
+            <tr><td><b>حرِج</b></td><td>تعطل كامل / توقف خدمة رئيسية</td><td>خلال <b>ساعتين</b> ضمن ساعات الدعم</td></tr>
+            <tr><td><b>عالٍ</b></td><td>تأثير كبير على التشغيل مع وجود بديل مؤقت</td><td>خلال <b>4 ساعات</b></td></tr>
+            <tr><td><b>متوسط</b></td><td>تأثير محدود على جزء من الوظائف</td><td>خلال <b>يوم عمل</b></td></tr>
+            <tr><td><b>منخفض</b></td><td>طلبات تحسين / استفسارات / ملاحظات</td><td>خلال <b>يومي عمل</b></td></tr>
           </tbody>
         </table>
         <p class="muted">ملاحظة: زمن الاستجابة لا يعني زمن الحل، وزمن الحل يعتمد على طبيعة البلاغ وتوفر البيانات وتعاون الأطراف.</p>
       </section>
 
-      <p class="foot-note">هذه نسخة إلكترونية تفاعلية من العقد. بعد تعبئة البيانات والتوقيع، اضغط «طباعة / حفظ PDF» لحفظ نسخة نهائية موقّعة.</p>
+      <p class="foot-note">هذه نسخة إلكترونية تفاعلية من العقد. بعد تعبئة البيانات والموافقة والتوقيع: اضغط «حفظ PDF» لنسختك، ثم «تصدير النسخة الموقّعة» وأرسل الملف الناتج لفريق غين لاعتماد العقد.</p>
     </div>
 
     <div class="doc-footer">
@@ -573,39 +655,111 @@
 </div>
 
 <script>
-(() => {
+/* ==================================================================
+   إعدادات العقد من الرابط (#c=...) — أسعار وبنود معدّلة وكلمة مرور
+   p0.<data>            = إعدادات مضغوطة بلا حماية
+   p1.<salt>.<iv>.<enc> = إعدادات مشفّرة AES-GCM بكلمة مرور
+   ================================================================== */
+const { b64uToBytes, parseCfgBytes } = window.GainLink;
+
+function unlockFlow(parts) {
+  return new Promise(resolve => {
+    const ov = document.getElementById('lock');
+    const input = document.getElementById('lockPw');
+    const btn = document.getElementById('lockBtn');
+    const err = document.getElementById('lockErr');
+    ov.classList.add('show');
+    async function attempt() {
+      err.textContent = '';
+      if (!input.value) { err.textContent = 'أدخل كلمة المرور'; return; }
+      btn.disabled = true;
+      try {
+        const cfg = await window.GainLink.decryptPayload(parts, input.value);
+        ov.classList.remove('show');
+        resolve(cfg);
+      } catch (e) { err.textContent = 'كلمة المرور غير صحيحة'; }
+      btn.disabled = false;
+    }
+    btn.addEventListener('click', attempt);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
+    setTimeout(() => input.focus(), 150);
+  });
+}
+
+async function resolveConfig() {
+  const m = location.hash.match(/[#&]c=([^&]+)/);
+  if (!m) return {};
+  try {
+    const parts = m[1].split('.');
+    if (parts[0] === 'p0') return await parseCfgBytes(b64uToBytes(parts[1]));
+    if (parts[0] === 'p1') return await unlockFlow(parts);
+  } catch (e) {
+    alert('تعذر قراءة إعدادات العقد من الرابط — سيُعرض العقد القياسي.');
+  }
+  return {};
+}
+
+(async () => {
+  const CFG = await resolveConfig();
+  if (CFG.edits) {
+    for (const [k, html] of Object.entries(CFG.edits)) {
+      const el = document.querySelector(`[data-art="${k}"], [data-editable="${k}"]`);
+      if (el) el.innerHTML = html;
+    }
+  }
+  initContract(CFG);
+})();
+
+function initContract(CFG) {
   lucide.createIcons();
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
-  const STORE = 'gain-contract-v1';
-
+  /* وضع المعاينة: يعرض العقد داخل معالج اللوحة دون حفظ أي شيء في متصفح الموظف */
+  const PREVIEW = /[#&]preview=1/.test(location.hash);
+  if (PREVIEW) document.body.classList.add('preview');
+  const STORE = 'gain-contract-v2' + (CFG.id ? ':' + CFG.id : '');
   const fmt = n => n.toLocaleString('en-US');
+  const PRICING = Object.assign({ base: 2499, app: 500, vat: 15 }, CFG.prices || {});
+  $$('.px-base').forEach(e => e.textContent = fmt(PRICING.base));
+  $$('.px-app').forEach(e => e.textContent = fmt(PRICING.app));
+  $$('.px-vat').forEach(e => e.textContent = PRICING.vat);
 
   /* ---------- persistence ---------- */
   const fields = $$('[data-k]');
   let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch (e) {}
-  fields.forEach(el => {
-    const k = el.dataset.k;
-    if (k in saved) {
-      if (el.type === 'checkbox') el.checked = saved[k];
-      else if (!el.readOnly || el.value === '') el.value = saved[k];
-    }
-  });
+  if (!PREVIEW) {
+    try { saved = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch (e) {}
+    fields.forEach(el => {
+      const k = el.dataset.k;
+      if (k in saved && !el.readOnly) {
+        if (el.type === 'checkbox') el.checked = saved[k]; else el.value = saved[k];
+      }
+    });
+  }
+  // تعبئة مسبقة من رابط العقد (لا تمس ما عبّأه العميل سابقًا)
+  const prefill = Object.assign({}, CFG.fill, CFG.cli ? { cliName: CFG.cli } : {});
+  for (const [k, v] of Object.entries(prefill)) {
+    const el = document.querySelector(`[data-k="${k}"]`);
+    if (!el || el.readOnly || v == null || v === '') continue;
+    if (el.type === 'checkbox') { if (!(k in saved)) el.checked = !!v; }
+    else if (!(k in saved) || !String(el.value).trim()) el.value = v;
+  }
 
   const saveNote = $('#saveNote');
   let noteT;
   function save() {
-    const data = {};
-    fields.forEach(el => { data[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value; });
-    try { localStorage.setItem(STORE, JSON.stringify(data)); } catch (e) {}
-    saveNote.classList.add('show');
-    clearTimeout(noteT); noteT = setTimeout(() => saveNote.classList.remove('show'), 1400);
+    if (!PREVIEW) {
+      const data = {};
+      fields.forEach(el => { if (!el.readOnly) data[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value; });
+      try { localStorage.setItem(STORE, JSON.stringify(data)); } catch (e) {}
+      saveNote.classList.add('show');
+      clearTimeout(noteT); noteT = setTimeout(() => saveNote.classList.remove('show'), 1400);
+    }
     updateFillbar();
   }
 
   /* ---------- fill progress ---------- */
-  const required = ['contractDate','cliName','cliCR','cliRep','cliTitle','activationDate','cliSignName','cliSignTitle','agree'];
+  const required = ['contractDate','cliName','cliCR','cliAddr','cliRep','cliSignName','cliSignTitle','agree'];
   function updateFillbar() {
     let done = 0;
     required.forEach(k => {
@@ -616,35 +770,41 @@
     $('#fillFill').style.width = Math.round(done / required.length * 100) + '%';
   }
 
-  /* ---------- header echoes ---------- */
+  /* ---------- header + signature echoes ---------- */
   function syncEchoes() {
     const cn = document.querySelector('[data-k="cliName"]').value.trim();
     $('#cliNameEcho').textContent = cn || 'العميل';
     const d = document.querySelector('[data-k="contractDate"]').value;
-    $('#contractDateLbl').textContent = d ? new Date(d + 'T00:00').toLocaleDateString('ar-SA-u-nu-latn', { year:'numeric', month:'long', day:'numeric' }) : '—';
-    // contract number: derived from client + date (stable-ish, no randomness)
+    const pretty = d ? new Date(d + 'T00:00').toLocaleDateString('ar-SA-u-ca-gregory-nu-latn', { year:'numeric', month:'long', day:'numeric' }) : '—';
+    $('#contractDateLbl').textContent = pretty;
+    $('#cliDateEcho').textContent = pretty;
+    $('#provDateEcho').textContent = pretty;
     const base = (cn || '') + (d || '');
     let h = 0; for (let i=0;i<base.length;i++){ h = (h*31 + base.charCodeAt(i)) >>> 0; }
     $('#contractNoLbl').textContent = base ? 'GAIN-' + (d ? d.replace(/-/g,'') : '') + '-' + (h % 1000).toString().padStart(3,'0') : '—';
   }
 
   /* ---------- pricing calculator ---------- */
-  const BASE = 2499, APP = 500;
+  const BASE = PRICING.base, APP = PRICING.app;
+  /* الخصم مجمّد داخل إعدادات الرابط وقت إنشاء العقد — ليس حقلًا قابلًا للتعديل من العميل */
+  const DISC = (CFG.disc && (CFG.disc.t === 'pct' || CFG.disc.t === 'fix') && CFG.disc.v > 0) ? CFG.disc : null;
   const CYCLE_NAMES = { '1':'شهري', '3':'ربع سنوي', '6':'نصف سنوي', '12':'سنوي' };
   const brInput = $('#branches');
   function branches() { let n = parseInt(brInput.value, 10); if (isNaN(n) || n < 1) n = 1; if (n > 999) n = 999; return n; }
+  /* قيمة الخصم لدورة معينة (لا تتجاوز قيمة الدورة ولا تقبل السالب) */
+  function discountFor(cycleAmt) {
+    if (!DISC) return 0;
+    const raw = DISC.t === 'pct' ? cycleAmt * Math.min(100, DISC.v) / 100 : DISC.v;
+    return Math.min(Math.max(0, raw), cycleAmt);
+  }
   function calc() {
-    const n = branches();
-    brInput.value = n;
+    const n = branches(); brInput.value = n;
     const app = $('#appOpt').checked;
     const months = parseInt($('#cycle').value, 10);
-    const base = BASE * n;
-    const appTotal = app ? APP * n : 0;
-    const monthly = base + appTotal;
-    const cycleAmt = monthly * months;
-    const vat = cycleAmt * 0.15;
-    const total = cycleAmt + vat;
-
+    const base = BASE * n, appTotal = app ? APP * n : 0;
+    const monthly = base + appTotal, cycleAmt = monthly * months;
+    const discAmt = discountFor(cycleAmt), afterDisc = cycleAmt - discAmt;
+    const vat = afterDisc * (PRICING.vat / 100), total = afterDisc + vat;
     $('#brEcho').textContent = n; $('#brEcho2').textContent = n;
     $('#baseVal').textContent = fmt(base) + ' ر.س';
     $('#appRow').style.display = app ? 'flex' : 'none';
@@ -653,6 +813,14 @@
     $('#cycleEcho').textContent = CYCLE_NAMES[months];
     $('#cycleMonthsEcho').textContent = months;
     $('#cycleVal').textContent = fmt(cycleAmt) + ' ر.س';
+    if (DISC) {
+      $('#discRow').style.display = 'flex';
+      $('#discPctEcho').textContent = DISC.t === 'pct' ? ` (${DISC.v}%)` : '';
+      $('#discVal').textContent = '−' + fmt(Math.round(discAmt)) + ' ر.س';
+      $('#afterDiscRow').style.display = 'flex';
+      $('#afterDiscVal').textContent = fmt(Math.round(afterDisc)) + ' ر.س';
+      if (DISC.why) { $('#discReasonRow').style.display = 'flex'; $('#discReasonVal').textContent = DISC.why; }
+    }
     $('#vatVal').textContent = fmt(Math.round(vat)) + ' ر.س';
     $('#totalVal').textContent = fmt(Math.round(total));
   }
@@ -662,57 +830,208 @@
   $('#appOpt').addEventListener('change', () => { calc(); save(); });
   $('#cycle').addEventListener('change', () => { calc(); save(); });
 
-  /* ---------- signature pad ---------- */
-  const canvas = $('#sigPad');
-  const hint = $('#sigHint');
-  const ctx = canvas.getContext('2d');
+  /* ---------- client signature pad ---------- */
+  const canvas = $('#sigPad'), hint = $('#sigHint'), ctx = canvas.getContext('2d');
   let drawing = false, hasInk = false;
   function sizeCanvas() {
-    const r = canvas.getBoundingClientRect();
-    const dpr = 2; // fixed for print sharpness; Math.random/devicePixelRatio avoided for stability
-    const prev = canvas.toDataURL();
+    const r = canvas.getBoundingClientRect(), dpr = 2;
+    const prev = hasInk ? canvas.toDataURL() : null;
     canvas.width = r.width * dpr; canvas.height = r.height * dpr;
     ctx.scale(dpr, dpr);
     ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1a2c5c';
-    if (hasInk) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, r.width, r.height); img.src = prev; }
+    if (prev) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, r.width, r.height); img.src = prev; }
   }
-  function pos(e) {
-    const r = canvas.getBoundingClientRect();
-    const t = e.touches ? e.touches[0] : e;
-    return { x: t.clientX - r.left, y: t.clientY - r.top };
-  }
+  function pos(e) { const r = canvas.getBoundingClientRect(), t = e.touches ? e.touches[0] : e; return { x: t.clientX - r.left, y: t.clientY - r.top }; }
   function start(e) { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
-  function move(e) { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); if (!hasInk) { hasInk = true; hint.style.display = 'none'; saveSig(); } e.preventDefault(); }
+  function move(e) { if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); if (!hasInk) { hasInk = true; canvas.dataset.ink = '1'; hint.style.display = 'none'; saveSig(); refreshExportBtn(); } e.preventDefault(); }
   function end() { if (drawing) { drawing = false; saveSig(); } }
-  function saveSig() { try { localStorage.setItem(STORE + '-sig', canvas.toDataURL()); } catch (e) {} }
+  function saveSig() { if (PREVIEW) return; try { localStorage.setItem(STORE + '-sig', canvas.toDataURL()); } catch (e) {} }
   canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
   canvas.addEventListener('touchstart', start, {passive:false}); canvas.addEventListener('touchmove', move, {passive:false}); canvas.addEventListener('touchend', end);
-  $('#sigClear').addEventListener('click', () => { ctx.clearRect(0,0,canvas.width,canvas.height); hasInk = false; hint.style.display = 'grid'; try { localStorage.removeItem(STORE + '-sig'); } catch(e){} });
-
-  // restore signature
+  $('#sigClear').addEventListener('click', () => {
+    ctx.clearRect(0,0,canvas.width,canvas.height); hasInk = false; delete canvas.dataset.ink; hint.style.display = 'grid';
+    try { localStorage.removeItem(STORE + '-sig'); } catch(e){}
+    refreshExportBtn();
+  });
   requestAnimationFrame(() => {
     sizeCanvas();
     try {
-      const s = localStorage.getItem(STORE + '-sig');
-      if (s) { const img = new Image(); img.onload = () => { const r = canvas.getBoundingClientRect(); ctx.drawImage(img, 0, 0, r.width, r.height); hasInk = true; hint.style.display = 'none'; }; img.src = s; }
+      const s = PREVIEW ? null : localStorage.getItem(STORE + '-sig');
+      if (s) { const img = new Image(); img.onload = () => { const r = canvas.getBoundingClientRect(); ctx.drawImage(img, 0, 0, r.width, r.height); hasInk = true; canvas.dataset.ink = '1'; hint.style.display = 'none'; refreshExportBtn(); }; img.src = s; }
     } catch (e) {}
   });
   let rzT; addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(sizeCanvas, 200); });
 
-  /* ---------- wire up ---------- */
-  fields.forEach(el => el.addEventListener('input', () => { save(); syncEchoes(); }));
-  fields.forEach(el => el.addEventListener('change', () => { save(); syncEchoes(); }));
+  /* ---------- DOCX build engine (يُستدعى من لوحة التحكم عبر إطار خفي — لا زر للعميل) ---------- */
+  let docxLibs = null;
+  const loadScript = src => new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = () => rej(new Error('تعذر تحميل ' + src));
+    document.head.appendChild(s);
+  });
+  const ensureDocxLibs = () => {
+    if (!docxLibs) docxLibs = loadScript('assets/docx.iife.js').then(() => loadScript('assets/contract-docx.js'));
+    return docxLibs;
+  };
+  const fetchBytes = async url => new Uint8Array(await (await fetch(url)).arrayBuffer());
+  const val = k => { const el = document.querySelector(`[data-k="${k}"]`); return el ? el.value.trim() : ''; };
+  const or = (v, ph) => v || ph;
 
+  /* نموذج المحتوى: يُستخرج من الصفحة الحية حتى تنعكس تعديلات الأدمن في ملف Word */
+  const AR_ALPHA = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز'];
+  function extractRuns(node, bold, out, skipEl) {
+    out = out || [];
+    node.childNodes.forEach(ch => {
+      if (ch === skipEl) return;
+      if (ch.nodeType === 3) { const t = ch.textContent.replace(/\s+/g, ' '); if (t) out.push({ t, b: !!bold }); }
+      else if (ch.nodeType === 1 && ch.tagName !== 'OL' && ch.tagName !== 'UL') {
+        extractRuns(ch, bold || ch.tagName === 'B' || ch.tagName === 'STRONG', out, skipEl);
+      }
+    });
+    return out;
+  }
+  function liRuns(li) {
+    const runs = extractRuns(li, false, []);
+    const nested = li.querySelector(':scope > ol, :scope > ul');
+    if (nested) {
+      [...nested.children].forEach((sub, i) => {
+        runs.push({ t: ` (${AR_ALPHA[i] || i + 1}) `, b: true });
+        extractRuns(sub, false, runs);
+      });
+    }
+    return runs;
+  }
+  function walkSection(container, model) {
+    [...container.children].forEach(el => {
+      if (el.matches('div[data-editable]')) return walkSection(el, model);
+      if (el.matches('.calc')) { model.push({ k: 'calc' }); return; }
+      const tag = el.tagName;
+      if (tag === 'H2') {
+        const nEl = el.querySelector('.n');
+        model.push({ k: 'h2', n: (nEl ? nEl.textContent : '').trim(), runs: extractRuns(el, false, [], nEl) });
+      }
+      else if (tag === 'H3') model.push({ k: 'h3', runs: extractRuns(el) });
+      else if (tag === 'H4') model.push({ k: 'h4', runs: extractRuns(el) });
+      else if (tag === 'P') {
+        const runs = extractRuns(el);
+        const txt = runs.map(r => r.t).join('');
+        if (/^\s*حدّد عدد الفروع/.test(txt)) runs.splice(0, runs.length, { t: 'ملخص الاشتراك وفق اختيارات العميل:', b: false });
+        model.push({ k: 'p', muted: el.classList.contains('muted') || el.classList.contains('lead-note'), runs });
+      }
+      else if (tag === 'UL') model.push({ k: 'ul', items: [...el.children].map(liRuns) });
+      else if (tag === 'OL') model.push({ k: 'ol', items: [...el.children].map(liRuns) });
+      else if (tag === 'TABLE') model.push({
+        k: 'table',
+        head: [...el.querySelectorAll('thead th')].map(th => th.textContent.trim()),
+        rows: [...el.querySelectorAll('tbody tr')].map(tr => [...tr.children].map(td => td.textContent.trim())),
+      });
+      else if (tag === 'DIV') walkSection(el, model);
+    });
+  }
+  function extractContractModel() {
+    const model = [];
+    document.querySelectorAll('.doc-body > .art').forEach(sec => {
+      const key = sec.dataset.art;
+      if (key === 'a1') { model.push({ k: 'parties' }); return; }
+      if (key === 'a20') { model.push({ k: 'bank' }); return; }
+      if (key === 'a21') { model.push({ k: 'sign' }); return; }
+      walkSection(sec, model);
+    });
+    return model;
+  }
+
+  async function buildDocxBlob() {
+    await ensureDocxLibs();
+    const [logo, gainSig] = await Promise.all([
+      fetchBytes('assets/gain-logo-navy.png'),
+      fetchBytes('assets/gain-signature.png'),
+    ]);
+    let clientSig = null, clientSigH = 65;
+    if (canvas.dataset.ink) {
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      clientSig = new Uint8Array(await blob.arrayBuffer());
+      clientSigH = Math.max(40, Math.min(90, Math.round(170 * canvas.height / canvas.width)));
+    }
+    const months = parseInt($('#cycle').value, 10);
+    const dateTxt = $('#contractDateLbl').textContent.trim();
+    const noTxt = $('#contractNoLbl').textContent.trim();
+    const data = {
+      no: noTxt === '—' ? '________________' : noTxt,
+      date: dateTxt === '—' ? '________________' : dateTxt,
+      cliName: or(val('cliName'), '________________________'),
+      cliPartyName: or(val('cliName'), 'العميل'),
+      cliCR: or(val('cliCR'), '________________'),
+      cliAddr: or(val('cliAddr'), '________________________'),
+      cliRep: or(val('cliRep'), '________________________'),
+      signName: or(val('cliSignName'), '________________________'),
+      signTitle: or(val('cliSignTitle'), '________________'),
+      agree: $('#agreeChk').checked,
+      calc: {
+        branches: String(branches()),
+        app: $('#appOpt').checked ? fmt(PRICING.app) + ' ر.س' : '—',
+        monthly: $('#monthlyVal').textContent,
+        cycle: CYCLE_NAMES[months] + ' (' + months + ' ' + (months === 1 ? 'شهر' : 'أشهر') + ')',
+        cycleAmt: $('#cycleVal').textContent,
+        disc: DISC ? {
+          label: 'الخصم' + (DISC.t === 'pct' ? ' (' + DISC.v + '%)' : ''),
+          amount: $('#discVal').textContent,
+          reason: DISC.why || '',
+          after: $('#afterDiscVal').textContent,
+        } : null,
+        vat: $('#vatVal').textContent,
+        total: $('#totalVal').textContent + ' ر.س',
+      },
+      images: { logo, gainSig, clientSig },
+      clientSigH,
+      prices: { base: fmt(PRICING.base) + ' ر.س', app: fmt(PRICING.app) + ' ر.س', vatPct: PRICING.vat },
+      model: extractContractModel(),
+    };
+    const doc = window.buildGainContractDoc(window.docx, data);
+    return window.docx.Packer.toBlob(doc);
+  }
+  window.__buildDocxBlob = buildDocxBlob; // تستدعيه لوحة التحكم من الإطار الخفي (وخطاف للاختبارات)
+
+  /* ---------- تصدير النسخة الموقّعة (تعود لفريق غين لاعتماد العقد) ---------- */
+  const exportBtn = $('#exportBtn');
+  function refreshExportBtn() {
+    exportBtn.disabled = !($('#agreeChk').checked && canvas.dataset.ink);
+  }
+  function buildSignedExport() {
+    const data = {};
+    fields.forEach(el => { data[el.dataset.k] = el.type === 'checkbox' ? el.checked : el.value; });
+    return {
+      v: 1, kind: 'gain-signed-contract',
+      id: CFG.id || '',
+      contractNo: $('#contractNoLbl').textContent.trim(),
+      signedAt: new Date().toISOString(),
+      fields: data,
+      sig: canvas.dataset.ink ? canvas.toDataURL() : '',
+    };
+  }
+  window.__buildSignedExport = buildSignedExport; // hook for automated tests
+  exportBtn.addEventListener('click', () => {
+    if (exportBtn.disabled) return;
+    const payload = buildSignedExport();
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'عقد موقع — ' + (val('cliName') || 'بدون اسم') + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    alert('تم تنزيل ملف النسخة الموقّعة. أرسله لفريق غين (بريد أو واتساب) لاعتماد العقد.');
+  });
+
+  /* ---------- wire up ---------- */
+  fields.forEach(el => { el.addEventListener('input', () => { save(); syncEchoes(); refreshExportBtn(); }); el.addEventListener('change', () => { save(); syncEchoes(); refreshExportBtn(); }); });
   $('#printBtn').addEventListener('click', () => window.print());
   $('#clearBtn').addEventListener('click', () => {
-    if (!confirm('سيتم تفريغ جميع الحقول والتوقيع. متابعة؟')) return;
+    if (!confirm('سيتم تفريغ جميع الحقول وتوقيع العميل. متابعة؟')) return;
     try { localStorage.removeItem(STORE); localStorage.removeItem(STORE + '-sig'); } catch (e) {}
     location.reload();
   });
 
-  // init
-  calc(); syncEchoes(); updateFillbar();
-})();
+  calc(); syncEchoes(); updateFillbar(); refreshExportBtn();
+}
 </script>
 </body>
 </html>
